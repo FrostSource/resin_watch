@@ -31,7 +31,6 @@ if not IsVREnabled() then
 end
 ifrequire "util.enums"
 ifrequire "util.haptics"
-ifrequire "util.easyconvars"
 ifrequire "extensions.string"
 ifrequire "extensions.vector"
 ifrequire "extensions.entity"
@@ -50,6 +49,7 @@ ifrequire "gesture"
 ifrequire "player"
 ifrequire "class"
 
+ifrequire "util.easyconvars"
 ifrequire "gameplay.smooth_speed"
 
 -- Common third-party libraries

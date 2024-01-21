@@ -59,7 +59,7 @@ function EasyConvars:Register(name, default, func, helpText, flags)
 
         -- Display current value
         if #args == 0 then
-            Msg(name .. " " .. reg.value)
+            Msg(name .. " = " .. reg.value)
             return
         end
 
@@ -108,6 +108,10 @@ function EasyConvars:Load(name)
 
     self.registered[name].value = loader:LoadString("easyconvar_"..name, self.registered[name].value)
     self.registered[name].persistent = true
+    -- If it has a callback, execute to run any necessary code
+    if type(self.registered[name].callback) == "function" then
+        self.registered[name].callback(self.registered[name].value)
+    end
 end
 
 ---Sets the convar as persistent. It will be saved to the player when changed and load its
