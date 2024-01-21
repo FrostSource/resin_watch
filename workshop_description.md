@@ -4,6 +4,8 @@ Keep track of resin in the map using this watch with a nearby indicator and tota
 
 [i]This addon is compatible with Scalable Init Support but does not require it.[/i]
 
+[img]https://steamuserimages-a.akamaihd.net/ugc/2312102971535718159/B40340B355316F302AC1910CF8464CA2FA204EC1/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img]
+
 [h2]How To Use[/h2]
 
 Tilt your non-dominant hand to your face as you would to see your health and look at the watch attached to wrist.
@@ -37,6 +39,10 @@ The watch will beep and vibrate your controller when resin is nearby.
 [i]This convar is persistent with your save file.[/i]
 
 [/list]
+
+[h2]Source Code[/h2]
+
+GitHub: https://github.com/FrostSource/resin_watch
 
 [h2]Known Issues[/h2]
 
