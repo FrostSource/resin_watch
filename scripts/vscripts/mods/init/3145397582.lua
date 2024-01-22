@@ -1,0 +1,1 @@
+require "resin_watch.init"
