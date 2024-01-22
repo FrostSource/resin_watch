@@ -204,6 +204,9 @@ function base:Think()
 
         local parent_yaw = self:GetAngles().y
         local local_yaw_angle_degrees = global_yaw_angle - parent_yaw
+        if self:GetUpVector().z < -0.8 then
+            local_yaw_angle_degrees = -local_yaw_angle_degrees
+        end
 
         local final_yaw = LerpAngle(0.1, self.compassEnt:GetLocalAngles().y, local_yaw_angle_degrees)
         self.compassEnt:SetLocalAngles(0, final_yaw, 0)
