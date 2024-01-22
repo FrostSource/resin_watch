@@ -11,7 +11,7 @@
 				[
 					{
 						_class = "RenderMeshFile"
-						filename = "models\\resin_watch\\dmx\\mesh\\resin_watch_compass.dmx"
+						filename = "models\\resin_watch\\dmx\\mesh\\resin_watch_level_indicator.dmx"
 						import_scale = 1.0
 						import_filter = 
 						{
@@ -27,12 +27,23 @@
 				[
 					{
 						_class = "MaterialGroup"
-						name = "blank"
+						name = "up"
 						remaps = 
 						[
 							{
-								from = "models/resin_watch/materials/resin_watch_compass.vmat"
-								to = "models/resin_watch/materials/resin_watch_compass_blank.vmat"
+								from = "models/resin_watch/materials/resin_watch_compass_blank.vmat"
+								to = "models/resin_watch/materials/resin_watch_level_indicator_up.vmat"
+							},
+						]
+					},
+					{
+						_class = "MaterialGroup"
+						name = "down"
+						remaps = 
+						[
+							{
+								from = "models/resin_watch/materials/resin_watch_compass_blank.vmat"
+								to = "models/resin_watch/materials/resin_watch_level_indicator_down.vmat"
 							},
 						]
 					},

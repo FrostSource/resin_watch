@@ -41,6 +41,16 @@ Default = 1
 The watch will beep and vibrate your controller when resin is nearby.
 [i]This convar is persistent with your save file.[/i]
 
+[*][b]resin_watch_level_up[/b]
+Default = 90
+How far above the watch resin is considered on an upper floor. Used for the level indicator arrow on the watch.
+[i]This convar is persistent with your save file.[/i]
+
+[*][b]resin_watch_level_down[/b]
+Default = -90
+How far below the watch resin is considered on a lower floor. Used for the level indicator arrow on the watch.
+[i]This convar is persistent with your save file.[/i]
+
 [/list]
 
 [hr][/hr]

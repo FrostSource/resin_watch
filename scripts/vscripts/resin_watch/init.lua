@@ -7,6 +7,11 @@ EasyConvars:SetPersistent("resin_watch_radius", true)
 EasyConvars:RegisterConvar("resin_watch_notify", "1", "Plays sound and vibrates when resin nearby")
 EasyConvars:SetPersistent("resin_watch_notify", true)
 
+EasyConvars:RegisterConvar("resin_watch_level_up", "90", "How far above the watch resin is considered on another floor")
+EasyConvars:SetPersistent("resin_watch_level_up", true)
+EasyConvars:RegisterConvar("resin_watch_level_down", "-90", "How far below the watch resin is considered on another floor")
+EasyConvars:SetPersistent("resin_watch_level_down", true)
+
 EasyConvars:Register("resin_watch_inverted", "0", function (isInverted)
     if not IsEntity(ResinWatch, true) then
         warn("Resin watch does not exist in game!")

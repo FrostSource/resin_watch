@@ -10,6 +10,10 @@ base.compassEnt = nil
 ---@type EntityHandle
 base.panelEnt = nil
 
+---Level indicator parented to the watch.
+---@type EntityHandle
+base.levelIndicatorEnt = nil
+
 ---Amount of resin that was found in the map since last check.
 ---@type number
 base.__lastResinCount = -1
@@ -18,12 +22,16 @@ base.__lastResinCount = -1
 ---@type EntityHandle
 base.__lastResinTracked = nil
 
+---The type of indicator the last level indicator used.
+---@type 0|1|2 # 0 = Same floor, 1 = above floor, 2 = below floor
+base.__lastLevelType = 0
+
 local RESIN_NOTIFY_HAPTIC_SEQ = HapticSequence(0.12, 0.9, 0.08)
 
 function base:Precache(context)
     PrecacheModel("models/resin_watch/resin_watch_compass.vmdl", context)
     PrecacheModel("models/resin_watch/resin_watch_base.vmdl", context)
-
+    PrecacheModel("models/resin_watch/resin_watch_level_indicator.vmdl", context)
     PrecacheModel("models/hands/counter_panels.vmdl", context)
     PrecacheResource("sound", "ResinWatch.ResinTrackedBeep", context)
 end
@@ -32,6 +40,7 @@ end
 ---Called automatically on spawn
 ---@param spawnkeys CScriptKeyValues
 function base:OnSpawn(spawnkeys)
+    -- Counter
     local panel = SpawnEntityFromTableSynchronous("prop_dynamic", {
         targetname = "resin_watch_panel",
         model = "models/hands/counter_panels.vmdl",
@@ -45,6 +54,7 @@ function base:OnSpawn(spawnkeys)
     panel:SetLocalAngles(0, 359.293, -37.9338)
     panel:SetAbsOrigin(panel:GetAbsOrigin() + panel:GetUpVector() * 0.03)
 
+    -- Compass
     local compass = SpawnEntityFromTableSynchronous("prop_dynamic", {
         targetname = "resin_watch_compass",
         model = "models/resin_watch/resin_watch_compass.vmdl",
@@ -54,8 +64,19 @@ function base:OnSpawn(spawnkeys)
     compass:SetParent(self, "")
     compass:ResetLocal()
 
+    -- Level indicator
+    local level = SpawnEntityFromTableSynchronous("prop_dynamic", {
+        targetname = "resin_watch_level_indicator",
+        model = "models/resin_watch/resin_watch_level_indicator.vmdl",
+        origin = self:GetAbsOrigin(),
+        disableshadows = "1",
+    })
+    level:SetParent(self, "")
+    level:ResetLocal()
+
     self.panelEnt = panel
     self.compassEnt = compass
+    self.levelIndicatorEnt = level
 end
 
 ---Called automatically on activate.
@@ -166,7 +187,7 @@ function base:Think()
 
     if nearest then
 
-        if self.__lastResinTracked == nil then
+        if self.__lastResinTracked ~= nearest then
             self.__lastResinTracked = nearest
             if EasyConvars:GetBool("resin_watch_notify") then
                 self:EmitSound("ResinWatch.ResinTrackedBeep")
@@ -187,10 +208,26 @@ function base:Think()
         local final_yaw = LerpAngle(0.1, self.compassEnt:GetLocalAngles().y, local_yaw_angle_degrees)
         self.compassEnt:SetLocalAngles(0, final_yaw, 0)
 
+        local zDiff = (nearest:GetCenter().z - selfOrigin.z)
+        local levelType = 0
+
+        if zDiff > EasyConvars:GetFloat("resin_watch_level_up") then
+            levelType = 1
+        elseif zDiff < EasyConvars:GetFloat("resin_watch_level_down") then
+            levelType = 2
+        end
+
+        if self.__lastLevelType ~= levelType then
+            self.__lastLevelType = levelType
+            self.levelIndicatorEnt:SetSkin(levelType)
+        end
+
     else
         if self.__lastResinTracked ~= nil then
             self.__lastResinTracked = nil
             self.compassEnt:SetSkin(1)
+            self.__lastLevelType = 0
+            self.levelIndicatorEnt:SetSkin(0)
         end
     end
 
