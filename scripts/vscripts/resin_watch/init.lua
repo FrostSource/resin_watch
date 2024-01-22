@@ -83,7 +83,7 @@ RegisterPlayerEventCallback("vr_player_ready", function (params)
         disableshadows = "1",
     }, function (spawnedEnt)
         ---@cast spawnedEnt ResinWatch
-        spawnedEnt:AttachToHand(Player.SecondaryHand)
+        spawnedEnt:AttachToHand()
         ResinWatch = spawnedEnt
     end, nil)
 
