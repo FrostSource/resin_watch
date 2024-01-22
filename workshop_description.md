@@ -12,6 +12,8 @@ Tilt your non-dominant hand to your face as you would to see your health and loo
 The main center screen will light up with a directional indicator when resin is nearby and will point to the nearest piece.
 The counter at the top of the watch displays how much resin is left in the map.
 
+When resin is far enough above or below the watch, a level indicator at the corner of the watch will light up with an arrow to let you know it might be on a floor you haven't reached yet.
+
 As you explore the map your resin watch will beep and vibrate your controller whenever a new piece of resin is nearby to notify you.
 
 [h2]Console Commands[/h2]
@@ -64,6 +66,6 @@ GitHub: https://github.com/FrostSource/resin_watch
 
 The watch model has no underside and was quickly put together by modifying a base asset. If you are a modeller and want to create a custom watch model for this addon please get in touch!
 
-The directional indicator does not correctly point to resin when the watch is upside down (hard to notice unless you hold the watch over your head with inverted mode).
+[strike]The directional indicator does not correctly point to resin when the watch is upside down (hard to notice unless you hold the watch over your head with inverted mode).[/strike]
 
 The watch will not track resin that has not been spawned yet, because of this the counter might not appear consistent but this is normal behaviour.
