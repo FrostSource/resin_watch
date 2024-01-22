@@ -16,6 +16,9 @@ As you explore the map your resin watch will beep and vibrate your controller wh
 
 [h2]Console Commands[/h2]
 
+If you don't know how to use the console, follow this guide: https://steamcommunity.com/sharedfiles/filedetails/?id=2040205272
+
+[hr][/hr]
 [list]
 
 [*][b]resin_watch_primary_hand[/b]
@@ -39,6 +42,9 @@ The watch will beep and vibrate your controller when resin is nearby.
 [i]This convar is persistent with your save file.[/i]
 
 [/list]
+
+[hr][/hr]
+Console commands can be set in the launch options for Half-Life: Alyx, just put a hyphen before each name and the value after, e.g. [b]-resin_watch_primary_hand 1[/b]
 
 [h2]Source Code[/h2]
 
