@@ -10,17 +10,6 @@ base.compassEnt = nil
 ---@type EntityHandle
 base.panelEnt = nil
 
--- ---@type CPropVRHand
--- base.attachedHand = nil
-
--- ---If the watch should attach the primary hand by default.
--- ---@type boolean
--- base.attachToPrimary = false
-
--- ---If the watch should be inverted on the wrist.
--- ---@type boolean
--- base.attachInverted = false
-
 ---Amount of resin that was found in the map since last check.
 ---@type number
 base.__lastResinCount = -1
@@ -67,11 +56,6 @@ function base:OnSpawn(spawnkeys)
 
     self.panelEnt = panel
     self.compassEnt = compass
-
-    -- -- Get these convars only on spawn so changes made during gameplay will stay persistent
-    -- -- after a save load without grabbing default values.
-    -- self.attachInverted = EasyConvars:GetBool("resin_watch_inverted") or self.attachInverted
-    -- self.attachToPrimary = EasyConvars:GetBool("resin_watch_primary_hand") or self.attachToPrimary
 end
 
 ---Called automatically on activate.
@@ -93,7 +77,6 @@ function base:OnReady(readyType)
     ---Moving watch to secondary hand.
     ---@param params PLAYER_EVENT_PRIMARY_HAND_CHANGED
     RegisterPlayerEventCallback("primary_hand_changed", function (params)
-        print("Primary changed", Player.SecondaryHand)
         self:AttachToHand(Player.SecondaryHand)
     end, self)
 end
@@ -110,12 +93,10 @@ function base:AttachToHand(hand, offset, angles, attachment)
     end
 
     if hand == Player.LeftHand then
-        print("Left hand")
         attachment = attachment or "item_holder_l"
         offset = offset or Vector(0.6, 1.2, 0)
         angles = angles or QAngle(-7.07305, 0, -90)
     else
-        print("Right hand")
         attachment = attachment or "item_holder_r"
         offset = offset or Vector(0.6, 1.2, 0)
         angles = angles or QAngle(-7.07305-180, 0, -90)
