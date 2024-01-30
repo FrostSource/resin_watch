@@ -18,6 +18,23 @@ require "math.common"
 Debug = {}
 Debug.version = "v1.7.0"
 
+---Try to find an entity using a target string.
+---@param target string
+---@return EntityHandle
+local function getEntityFromTarget(target)
+    if target == "!player" then
+        return Entities:GetLocalPlayer()
+    end
+    local ent = Entities:FindByName(nil, target)
+    if not ent then
+        ent = Entities:FindByClassname(nil, target)
+        if not ent then
+            ent = Entities:FindByName(nil, "*"..target.."*")
+        end
+    end
+    return ent
+end
+
 ---
 ---Prints all entities in the map, along with any supplied property patterns.
 ---
@@ -96,6 +113,15 @@ Convars:RegisterCommand("sphere", function (_, x, y, z, r)
 
     DebugDrawSphere(Vector(x, y, z), Vector(255, 255, 255), 255, r, false, 10)
 
+end, "", 0)
+
+Convars:RegisterCommand("print_ent_criteria", function (_, entity)
+    local ent = getEntityFromTarget(entity)
+    if ent then
+        ent:PrintCriteria()
+    else
+        print("Couldn't find entity using search string '"..entity.."'")
+    end
 end, "", 0)
 
 if IsInToolsMode() then
@@ -700,4 +726,13 @@ function Debug.Sphere(x, y, z, radius)
     radius = radius or 8
 
     DebugDrawSphere(Vector(x, y, z), Vector(255, 255, 255), 255, radius, false, 10)
+end
+
+---
+---Returns a string made up of an entity's class and name in the format "[class, name]" for debugging purposes.
+---
+---@param ent EntityHandle
+---@return string
+function Debug.EntStr(ent)
+    return "[" .. ent:GetClassname() .. ", " .. ent:GetName() .. "]"
 end

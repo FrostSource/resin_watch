@@ -623,7 +623,7 @@ end
 
 ---Get the entity handle of the currently equipped weapon/item.
 ---If nothing is equipped this will return the primary hand entity.
----@return EntityHandle
+---@return EntityHandle|nil
 function CBasePlayer:GetWeapon()
     -- print('getting gun')
     if self.CurrentlyEquipped == PLAYER_WEAPON_ENERGYGUN then
@@ -637,7 +637,8 @@ function CBasePlayer:GetWeapon()
     elseif self.CurrentlyEquipped == PLAYER_WEAPON_MULTITOOL then
         return Entities:FindByClassnameNearest("hlvr_multitool", self.PrimaryHand:GetOrigin(), 128)--[[@as EntityHandle]]
     else
-        return self.PrimaryHand
+        -- return self.PrimaryHand
+        return nil
     end
 end
 
@@ -672,13 +673,20 @@ function CBasePlayer:UpdateWeapons(removes, set)
     while attachment ~= nil do
         if not removes or not (vlua.find(removes, attachment) or vlua.find(removes, attachment:GetClassname())) then
             if attachment == set or attachment:GetClassname() == set then
+                -- print("setFound", attachment:GetClassname())
                 setFound = attachment
-            elseif vlua.find(specialAttachmentsOrder, attachment:GetClassname()) then
-                specialAttachmentsFound[attachment:GetClassname()] = attachment
-            else
-                table.insert(attachments, 1, attachment)
+            end
+
+            -- Do not track multiple versions of the same entity
+            if not vlua.find(attachments, attachment) and not vlua.find(specialAttachmentsFound, attachment) then
+                if vlua.find(specialAttachmentsOrder, attachment:GetClassname()) then
+                    specialAttachmentsFound[attachment:GetClassname()] = attachment
+                else
+                    table.insert(attachments, 1, attachment)
+                end
             end
         end
+        -- print("Removing", attachment:GetClassname())
         hand:RemoveHandAttachmentByHandle(attachment)
         -- Get next current attachment
         attachment = hand:GetHandAttachment()
@@ -686,19 +694,24 @@ function CBasePlayer:UpdateWeapons(removes, set)
 
     -- Add special attachments back first to avoid crash
     for _, specialName in ipairs(specialAttachmentsOrder) do
-        if specialAttachmentsFound[specialName] then
-            hand:AddHandAttachment(specialAttachmentsFound[specialName])
+        local specialAttachment = specialAttachmentsFound[specialName]
+        if specialAttachment then
+            -- print("Adding special", specialAttachment:GetClassname())
+            hand:AddHandAttachment(specialAttachment)
         end
     end
 
     -- Add back attachments that weren't removed
     for _, removedAttachment in ipairs(attachments) do
-        print("Adding attachment", removedAttachment:GetClassname())
-        hand:AddHandAttachment(removedAttachment)
+        -- print("Adding", removedAttachment:GetClassname())
+        if removedAttachment ~= setFound then
+            hand:AddHandAttachment(removedAttachment)
+        end
     end
 
     -- Add back the attachment to be set last
     if setFound ~= nil then
+        print("Setting", setFound:GetClassname())
         hand:AddHandAttachment(setFound)
         -- Multitool needs to be added twice
         if setFound:GetClassname() == "hlvr_multitool" then
@@ -731,6 +744,15 @@ end
 ---@return EntityHandle? # The handle of the newly set weapon if found.
 function CBasePlayer:SetWeapon(weapon)
     return self:UpdateWeapons(nil, weapon)
+end
+
+---
+---Get the invisible player backpack.
+---This is will return the backpack even if it has been disabled with a `info_hlvr_equip_player`.
+---
+---@return EntityHandle?
+function CBasePlayer:GetBackpack()
+    return Entities:FindByClassname(nil, "player_backpack")
 end
 
 ---@class __PlayerRegisteredEventData
@@ -1072,14 +1094,10 @@ end
 ListenToGameEvent("item_released", listenEventItemReleased, nil)
 
 ---@class PLAYER_EVENT_PRIMARY_HAND_CHANGED : GAME_EVENT_PRIMARY_HAND_CHANGED
----@field is_primary_left boolean
 
 ---Tracking handedness.
 ---@param data GAME_EVENT_PRIMARY_HAND_CHANGED
 local function listenEventPrimaryHandChanged(data)
-    ---@cast data PLAYER_EVENT_PRIMARY_HAND_CHANGED
-    data.is_primary_left = (data.is_primary_left == 1) and true or false
-
     if data.is_primary_left then
         Player.PrimaryHand = Player.LeftHand
         Player.SecondaryHand = Player.RightHand
@@ -1356,15 +1374,12 @@ ListenToGameEvent("player_removed_item_from_itemholder", listenEventPlayerRemove
 
 -- No known way to track resin being taken out reliably.
 
----@class PLAYER_EVENT_PLAYER_DROP_RESIN_IN_BACKPACK : GAME_EVENT_PLAYER_DROP_RESIN_IN_BACKPACK
----@field resin_ent EntityHandle? # The resin entity being dropped into the backpack.
-
 ---Track resin
 ---@param data GAME_EVENT_PLAYER_DROP_RESIN_IN_BACKPACK
 local function listenEventPlayerDropResinInBackpack(data)
-    print("\nSTORE RESIN:")
-    Debug.PrintTable(data)
-    print("\n")
+    -- print("\nSTORE RESIN:")
+    -- Debug.PrintTable(data)
+    -- print("\n")
 
     local resin = Player.Items.resin
                         -- this updates
@@ -1377,9 +1392,6 @@ local function listenEventPlayerDropResinInBackpack(data)
         Player.Items.resin_found = Player.Items.resin_found + resin_added
     end
     last_resin_dropped = nil
-
-    ---@cast data PLAYER_EVENT_PLAYER_DROP_RESIN_IN_BACKPACK
-    data.resin_ent = last_resin_dropped
 
     for id, event_data in pairs(registered_event_callbacks[data.game_event_name]) do
         if event_data.context ~= nil then

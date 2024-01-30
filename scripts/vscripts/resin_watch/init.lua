@@ -54,3 +54,5 @@ RegisterPlayerEventCallback("vr_player_ready", function (params)
     end, nil)
 
 end)
+
+print("Resin watch v1.0.1 initialized...")

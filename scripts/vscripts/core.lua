@@ -25,11 +25,12 @@ require "util.globals"
 
 -- Base libraries
 
-ifrequire "debug.core"
+ifrequire "debug.common"
 if not IsVREnabled() then
     ifrequire "debug.novr"
 end
 ifrequire "util.enums"
+ifrequire "util.common"
 ifrequire "util.haptics"
 ifrequire "extensions.string"
 ifrequire "extensions.vector"
@@ -50,7 +51,6 @@ ifrequire "player"
 ifrequire "class"
 
 ifrequire "util.easyconvars"
-ifrequire "gameplay.smooth_speed"
 
 -- Common third-party libraries
 

@@ -115,7 +115,12 @@ end
 function ifrequire(modname, callback)
     ---@TODO: Consider using module_exists
     local success, result = pcall(require, modname)
-    if success and callback then
+    if not success then
+        Warning("ifrequire("..modname..") "..tostring(result).."\n")
+        return nil
+    end
+
+    if callback then
         callback(result)
         return result
     end
@@ -602,11 +607,9 @@ function SearchEntity(entity, searchPattern)
 
     local function searchTable(tbl, pattern)
         for key, value in pairs(tbl) do
-            if debug then  print("", key, value) end
             local lkey = key:lower()
             if not lkey:startswith("set") then
                 if string.find(lkey, pattern) then
-                    if debug then print(key, value) end
                     return key, value
                 end
             end
@@ -635,26 +638,6 @@ function SearchEntity(entity, searchPattern)
     end
 
     return nil, nil
-end
-
----
----Linearly interpolates between two angles.
----
----@param t number # The interpolation parameter, where 0 returns angle_start and 1 returns angle_end.
----@param angle_start number # The starting angle in degrees.
----@param angle_end number # The ending angle in degrees.
----@return number # The interpolated angle.
-function LerpAngle(t, angle_start, angle_end)
-    angle_start = angle_start % 360
-    angle_end = angle_end % 360
-
-    local angular_distance = (angle_end - angle_start + 180) % 360 - 180
-
-    local interpolated_angle = angle_start + t * angular_distance
-
-    interpolated_angle = (interpolated_angle + 360) % 360
-
-    return interpolated_angle
 end
 
 devprint("globals.lua ".. version .." initialized...")

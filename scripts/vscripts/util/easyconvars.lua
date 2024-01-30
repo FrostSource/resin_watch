@@ -68,6 +68,7 @@ function EasyConvars:Register(name, default, func, helpText, flags)
         if type(reg.callback) == "function" then
             local result = reg.callback(...)
             if result ~= nil then
+                if type(result) == "boolean" then result = result and "1" or "0" end
                 reg.value = tostring(result)
             end
         end
@@ -106,6 +107,7 @@ function EasyConvars:Load(name)
         return
     end
 
+    print(name, loader:LoadString("easyconvar_"..name, nil))
     self.registered[name].value = loader:LoadString("easyconvar_"..name, self.registered[name].value)
     self.registered[name].persistent = true
     -- If it has a callback, execute to run any necessary code
