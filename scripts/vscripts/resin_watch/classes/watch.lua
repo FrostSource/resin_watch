@@ -1,3 +1,10 @@
+if thisEntity then
+    -- Inherit this script if attached to entity
+    -- Will also load the script at the same time if needed
+    inherit(GetScriptFile())
+    return
+end
+
 
 ---@class ResinWatch : EntityClass
 local base = entity("ResinWatch")
