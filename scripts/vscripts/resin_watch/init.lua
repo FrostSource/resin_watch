@@ -28,6 +28,7 @@ EasyConvars:Register("resin_watch_inverted", "0", function (enabled)
 
     ResinWatch:AttachToHand()
 end, "Watch faces underneath the wrist")
+EasyConvars:SetPersistent("resin_watch_inverted", true)
 
 EasyConvars:Register("resin_watch_primary_hand", "0", function (enabled)
     if not IsEntity(ResinWatch, true) then
@@ -37,12 +38,35 @@ EasyConvars:Register("resin_watch_primary_hand", "0", function (enabled)
 
     ResinWatch:AttachToHand()
 end, "Watch attaches to primary hand")
+EasyConvars:SetPersistent("resin_watch_primary_hand", true)
 
 EasyConvars:Register("resin_watch_allow_ammo_tracking", "1", function (enabled)
+    EasyConvars:SetRaw("resin_watch_allow_ammo_tracking", enabled)
+
     if IsEntity(ResinWatch, true) then
-        ResinWatch:SetTrackingMode("resin")
+        ResinWatch:UpdateTrackedClassList()
+        ResinWatch:UpdateCounterPanel()
+        enabled = truthy(enabled)
+        if not enabled and not EasyConvars:GetBool("resin_watch_allow_item_tracking") then
+            ResinWatch:SetTrackingMode("resin")
+        end
     end
-end, "Allow ammo and items to be tracked by the watches alternate mode")
+end, "Allow ammo to be tracked by the watch's alternate tracking mode")
+EasyConvars:SetPersistent("resin_watch_allow_ammo_tracking", true)
+
+EasyConvars:Register("resin_watch_allow_item_tracking", "1", function (enabled)
+    EasyConvars:SetRaw("resin_watch_allow_item_tracking", enabled)
+
+    if IsEntity(ResinWatch, true) then
+        ResinWatch:UpdateTrackedClassList()
+        ResinWatch:UpdateCounterPanel()
+        enabled = truthy(enabled)
+        if not enabled and not EasyConvars:GetBool("resin_watch_allow_ammo_tracking") then
+            ResinWatch:SetTrackingMode("resin")
+        end
+    end
+end, "Allow items to be tracked by the watch's' alternate tracking mode")
+EasyConvars:SetPersistent("resin_watch_allow_item_tracking", true)
 
 ---Global entity for Resin Watch.
 ---@type ResinWatch
@@ -67,6 +91,37 @@ RegisterPlayerEventCallback("vr_player_ready", function (params)
         ResinWatch = spawnedEnt
     end, nil)
 
+end)
+
+RegisterPlayerEventCallback("novr_player", function (params)
+    EasyConvars:Register("resin_watch_novr_debug", "", function (enabled)
+        enabled = truthy(enabled)
+        if enabled then
+            SpawnEntityFromTableAsynchronous("prop_dynamic", {
+                targetname = "resin_watch_novr",
+                model = "models/resin_watch/resin_watch_base.vmdl",
+                vscripts = "resin_watch/classes/watch",
+                disableshadows = "1",
+            }, function (spawnedEnt)
+                ---@cast spawnedEnt ResinWatch
+                spawnedEnt:SetParent(Player, "")
+                spawnedEnt:SetLocalOrigin(Vector(8,0,60))
+                spawnedEnt:SetLocalAngles(0,-90,45)
+                ResinWatch = spawnedEnt
+            end, nil)
+        end
+    end)
+
+    Convars:RegisterCommand("resin_watch_novr_toggle_mode", function ()
+        print(IsEntity(ResinWatch, true))
+        if IsEntity(ResinWatch, true) then
+            if ResinWatch.trackingMode == "resin" then
+                ResinWatch:SetTrackingMode("ammo")
+            else
+                ResinWatch:SetTrackingMode("resin")
+            end
+        end
+    end, "", 0)
 end)
 
 print("Resin watch v1.0.1 initialized...")

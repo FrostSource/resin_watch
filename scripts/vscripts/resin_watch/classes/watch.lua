@@ -5,38 +5,6 @@ if thisEntity then
     return
 end
 
-
----@class ResinWatch : EntityClass
-local base = entity("ResinWatch")
-
----Rotating indicator parented to the watch.
----@type EntityHandle
-base.compassEnt = nil
-
----Text panel parented to the watch.
----@type EntityHandle
-base.panelEnt = nil
-
----The type of entity to track.
----@type "resin"|"ammo"
-base.trackingMode = "resin"
-
----Level indicator parented to the watch.
----@type EntityHandle
-base.levelIndicatorEnt = nil
-
----Amount of resin that was found in the map since last check.
----@type number
-base.__lastResinCount = -1
-
----The resin current being tracked by the watch.
----@type EntityHandle
-base.__lastResinTracked = nil
-
----The type of indicator the last level indicator used.
----@type 0|1|2 # 0 = Same floor, 1 = above floor, 2 = below floor
-base.__lastLevelType = 0
-
 local RESIN_NOTIFY_HAPTIC_SEQ = HapticSequence(0.12, 0.9, 0.08)
 
 local RESIN_COUNTER_INDEX_0 = 32
@@ -80,6 +48,44 @@ local CLASS_LIST_ITEMS = {
     "item_hlvr_health_station_vial",
     "item_item_crate",
 }
+
+
+---@class ResinWatch : EntityClass
+local base = entity("ResinWatch")
+
+---Rotating indicator parented to the watch.
+---@type EntityHandle
+base.compassEnt = nil
+
+---Text panel parented to the watch.
+---@type EntityHandle
+base.panelEnt = nil
+
+---The type of entity to track.
+---@type "resin"|"ammo"
+base.trackingMode = "resin"
+
+---Level indicator parented to the watch.
+---@type EntityHandle
+base.levelIndicatorEnt = nil
+
+---Amount of resin that was found in the map since last check.
+---@type number
+base.__lastResinCount = -1
+
+---The resin current being tracked by the watch.
+---@type EntityHandle
+base.__lastResinTracked = nil
+
+---The type of indicator the last level indicator used.
+---@type 0|1|2 # 0 = Same floor, 1 = above floor, 2 = below floor
+base.__lastLevelType = 0
+
+---List of classnames that are currently tracked.
+---@type string[]
+base.__currentTrackedClasses = CLASS_LIST_RESIN
+
+
 
 local CLASS_LIST_AMMO_ITEMS = ArrayAppend(CLASS_LIST_AMMO, CLASS_LIST_ITEMS)
 
@@ -188,7 +194,7 @@ end
 
 ---Update the text panel on the watch with text.
 ---@param amount number
-function base:UpdateDigitPanel(amount)
+function base:UpdateCounterPanelNumber(amount)
     amount = Clamp(amount, 0, 99)
     local tens = math.floor(amount / 10)
     local ones = amount % 10
@@ -205,9 +211,11 @@ end
 ---Set the tracking mode.
 ---@param mode "resin"|"ammo"
 function base:SetTrackingMode(mode)
-    if not EasyConvars:GetBool("resin_watch_allow_ammo_tracking") then
+    if not EasyConvars:GetBool("resin_watch_allow_ammo_tracking") and not EasyConvars:GetBool("resin_watch_allow_item_tracking") then
         mode = "resin"
     end
+    -- Early exit if new mode isn't different
+    if mode == self.trackingMode then return end
 
     local indBlank, skinBlank = RESIN_COUNTER_INDEX_BLANK, SKIN_COMPASS_RESIN_BLANK
     if mode == "ammo" then
@@ -219,13 +227,37 @@ function base:SetTrackingMode(mode)
 
     self.trackingMode = mode
 
-    self:UpdateCounterPanel()
+    self:UpdateTrackedClassList()
+    self:UpdateCounterPanel(true)
 end
 
 ---Set the indication visuals to blank, color based on tracking mode.
 function base:SetBlankVisuals()
     self.compassEnt:SetSkin(self.trackingMode == "resin" and SKIN_COMPASS_RESIN_BLANK or SKIN_COMPASS_AMMO_BLANK)
     self.levelIndicatorEnt:SetSkin(self.trackingMode == "resin" and SKIN_LEVEL_RESIN_BLANK or SKIN_LEVEL_AMMO_BLANK)
+end
+
+---Get the list of classnames related to the current tracking mode.
+---@return string[]
+function base:GetTrackedClassList()
+    if self.trackingMode == "resin" then
+        return CLASS_LIST_RESIN
+    elseif self.trackingMode == "ammo" then
+        local ammo, items = EasyConvars:GetBool("resin_watch_allow_ammo_tracking"), EasyConvars:GetBool("resin_watch_allow_item_tracking")
+        if ammo and items then
+            return CLASS_LIST_AMMO_ITEMS
+        elseif ammo then
+            return CLASS_LIST_AMMO
+        elseif items then
+            return CLASS_LIST_ITEMS
+        end
+    end
+    return {}
+end
+
+---Set __currentTrackedClasses to the correct list based on mode and convars.
+function base:UpdateTrackedClassList()
+    self.__currentTrackedClasses = self:GetTrackedClassList()
 end
 
 ---Get the total number of entities from a list of classes.
@@ -239,11 +271,18 @@ local function countClassList(classes)
     return count
 end
 
-function base:UpdateCounterPanel()
-    local count = countClassList(self.trackingMode == "resin" and CLASS_LIST_RESIN or CLASS_LIST_AMMO_ITEMS)
+---Updates the digit counter panel with the current number of tracked entities in the map.
+---@param force? boolean # If true the number will be updated even if the number of entities hasn't changed.
+function base:UpdateCounterPanel(force)
+    -- local count = countClassList(self.trackingMode == "resin" and CLASS_LIST_RESIN or CLASS_LIST_AMMO_ITEMS)
+    local count = countClassList(self.__currentTrackedClasses)
+
+    if force then
+        self.__lastResinCount = -1
+    end
 
     if count ~= self.__lastResinCount then
-        self:UpdateDigitPanel(count)
+        self:UpdateCounterPanelNumber(count)
         self.__lastResinCount = count
     end
 end
@@ -260,7 +299,8 @@ function base:Think()
     local selfOrigin = self:GetAbsOrigin()
 
     ---@type EntityHandle
-    local nearest = Entities:FindByClassnameListNearest(self.trackingMode == "resin" and CLASS_LIST_RESIN or CLASS_LIST_AMMO_ITEMS, selfOrigin, EasyConvars:GetInt("resin_watch_radius"))
+    local nearest = Entities:FindByClassnameListNearest(self.__currentTrackedClasses, selfOrigin, EasyConvars:GetInt("resin_watch_radius"))
+    -- local nearest = Entities:FindByClassnameListNearest(self.trackingMode == "resin" and CLASS_LIST_RESIN or CLASS_LIST_AMMO_ITEMS, selfOrigin, EasyConvars:GetInt("resin_watch_radius"))
 
     if nearest then
 
