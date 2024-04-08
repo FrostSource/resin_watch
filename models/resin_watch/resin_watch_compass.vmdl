@@ -36,6 +36,28 @@
 							},
 						]
 					},
+					{
+						_class = "MaterialGroup"
+						name = "ammo"
+						remaps = 
+						[
+							{
+								from = "models/resin_watch/materials/resin_watch_compass.vmat"
+								to = "models/resin_watch/materials/resin_watch_compass_ammo.vmat"
+							},
+						]
+					},
+					{
+						_class = "MaterialGroup"
+						name = "blank_ammo"
+						remaps = 
+						[
+							{
+								from = "models/resin_watch/materials/resin_watch_compass.vmat"
+								to = "models/resin_watch/materials/resin_watch_compass_blank_ammo.vmat"
+							},
+						]
+					},
 				]
 			},
 		]

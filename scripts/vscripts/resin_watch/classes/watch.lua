@@ -17,6 +17,10 @@ base.compassEnt = nil
 ---@type EntityHandle
 base.panelEnt = nil
 
+---The type of entity to track.
+---@type "resin"|"ammo"
+base.trackingMode = "resin"
+
 ---Level indicator parented to the watch.
 ---@type EntityHandle
 base.levelIndicatorEnt = nil
@@ -34,6 +38,50 @@ base.__lastResinTracked = nil
 base.__lastLevelType = 0
 
 local RESIN_NOTIFY_HAPTIC_SEQ = HapticSequence(0.12, 0.9, 0.08)
+
+local RESIN_COUNTER_INDEX_0 = 32
+local RESIN_COUNTER_INDEX_9 = 41
+local RESIN_COUNTER_INDEX_BLANK = 43
+local AMMO_COUNTER_INDEX_0 = 16
+local AMMO_COUNTER_INDEX_9 = 25
+local AMMO_COUNTER_INDEX_BLANK = 27
+
+local SKIN_LEVEL_RESIN_BLANK = 0
+local SKIN_LEVEL_RESIN_UP = 1
+local SKIN_LEVEL_RESIN_DOWN = 2
+local SKIN_LEVEL_AMMO_BLANK = 3
+local SKIN_LEVEL_AMMO_UP = 4
+local SKIN_LEVEL_AMMO_DOWN = 5
+
+local SKIN_COMPASS_RESIN = 0
+local SKIN_COMPASS_RESIN_BLANK = 1
+local SKIN_COMPASS_AMMO = 2
+local SKIN_COMPASS_AMMO_BLANK = 3
+
+local CLASS_LIST_RESIN = {
+    "item_hlvr_crafting_currency_small",
+    "item_hlvr_crafting_currency_large"
+}
+
+local CLASS_LIST_AMMO = {
+    "item_hlvr_clip_energygun",
+    "item_hlvr_clip_energygun_multiple",
+    "item_hlvr_clip_rapidfire",
+    "item_hlvr_clip_shotgun_single",
+    "item_hlvr_clip_shotgun_multiple",
+    "item_hlvr_clip_generic_pistol",
+    "item_hlvr_clip_generic_pistol_multiple",
+}
+
+local CLASS_LIST_ITEMS = {
+    "item_hlvr_grenade_frag",
+    "item_hlvr_grenade_xen",
+    "item_healthvial",
+    "item_hlvr_health_station_vial",
+    "item_item_crate",
+}
+
+local CLASS_LIST_AMMO_ITEMS = ArrayAppend(CLASS_LIST_AMMO, CLASS_LIST_ITEMS)
 
 function base:Precache(context)
     PrecacheModel("models/resin_watch/resin_watch_compass.vmdl", context)
@@ -90,15 +138,15 @@ end
 ---Any self values set here are automatically saved
 ---@param readyType OnReadyType
 function base:OnReady(readyType)
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterIcon=43")
-    self.compassEnt:SetSkin(1)
+    self:SetTrackingMode(self.trackingMode)
+    self:SetBlankVisuals()
 
     self:SetThink("ResinCountThink", "ResinWatchPanelThink", 0.1, self)
     self:ResumeThink()
 
     RegisterPlayerEventCallback("player_drop_resin_in_backpack", function (params)
         self:Delay(function()
-            self:UpdateResinCount()
+            self:UpdateCounterPanel()
         end, 0)
     end, self)
 
@@ -116,7 +164,6 @@ end
 ---@param attachment? string # Optional attachment name.
 function base:AttachToHand(hand, offset, angles, attachment)
     if hand == nil then
-        -- hand = self.attachToPrimary and Player.PrimaryHand or Player.SecondaryHand
         hand = EasyConvars:GetBool("resin_watch_primary_hand") and Player.PrimaryHand or Player.SecondaryHand
     end
 
@@ -141,18 +188,62 @@ end
 
 ---Update the text panel on the watch with text.
 ---@param amount number
-function base:UpdatePanel(amount)
+function base:UpdateDigitPanel(amount)
     amount = Clamp(amount, 0, 99)
     local tens = math.floor(amount / 10)
     local ones = amount % 10
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterDigitTens="..RemapVal(tens, 0, 9, 32, 41))
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterDigitOnes="..RemapVal(ones, 0, 9, 32, 41))
+
+    local ind0,ind9 = RESIN_COUNTER_INDEX_0, RESIN_COUNTER_INDEX_9
+    if self.trackingMode == "ammo" then
+        ind0,ind9 = AMMO_COUNTER_INDEX_0, AMMO_COUNTER_INDEX_9
+    end
+
+    self.panelEnt:EntFire("SetRenderAttribute", "$CounterDigitTens="..RemapVal(tens, 0, 9, ind0, ind9))
+    self.panelEnt:EntFire("SetRenderAttribute", "$CounterDigitOnes="..RemapVal(ones, 0, 9, ind0, ind9))
 end
 
-function base:UpdateResinCount()
-    local count = #Entities:FindAllByClassname("item_hlvr_crafting_currency_large") + #Entities:FindAllByClassname("item_hlvr_crafting_currency_small")
+---Set the tracking mode.
+---@param mode "resin"|"ammo"
+function base:SetTrackingMode(mode)
+    if not EasyConvars:GetBool("resin_watch_allow_ammo_tracking") then
+        mode = "resin"
+    end
+
+    local indBlank, skinBlank = RESIN_COUNTER_INDEX_BLANK, SKIN_COMPASS_RESIN_BLANK
+    if mode == "ammo" then
+        indBlank, skinBlank = AMMO_COUNTER_INDEX_BLANK, SKIN_COMPASS_AMMO_BLANK
+    end
+
+    self.panelEnt:EntFire("SetRenderAttribute", "$CounterIcon="..indBlank)
+    self.compassEnt:SetSkin(skinBlank)
+
+    self.trackingMode = mode
+
+    self:UpdateCounterPanel()
+end
+
+---Set the indication visuals to blank, color based on tracking mode.
+function base:SetBlankVisuals()
+    self.compassEnt:SetSkin(self.trackingMode == "resin" and SKIN_COMPASS_RESIN_BLANK or SKIN_COMPASS_AMMO_BLANK)
+    self.levelIndicatorEnt:SetSkin(self.trackingMode == "resin" and SKIN_LEVEL_RESIN_BLANK or SKIN_LEVEL_AMMO_BLANK)
+end
+
+---Get the total number of entities from a list of classes.
+---@param classes string[]
+---@return number
+local function countClassList(classes)
+    local count = 0
+    for _, class in ipairs(classes) do
+        count = count + #Entities:FindAllByClassname(class)
+    end
+    return count
+end
+
+function base:UpdateCounterPanel()
+    local count = countClassList(self.trackingMode == "resin" and CLASS_LIST_RESIN or CLASS_LIST_AMMO_ITEMS)
+
     if count ~= self.__lastResinCount then
-        self:UpdatePanel(count)
+        self:UpdateDigitPanel(count)
         self.__lastResinCount = count
     end
 end
@@ -160,39 +251,21 @@ end
 ---Check every 4 seconds for newly spawned resin.
 ---Updates immediately when resin is stored in backpack elsewhere in code.
 function base:ResinCountThink()
-    self:UpdateResinCount()
+    self:UpdateCounterPanel()
     return 4
 end
 
 ---Main entity think function. Think state is saved between loads
 function base:Think()
     local selfOrigin = self:GetAbsOrigin()
-    local nearestSmall = Entities:FindByClassnameNearest("item_hlvr_crafting_currency_small", selfOrigin, EasyConvars:GetInt("resin_watch_radius"))
-    local nearestLarge = Entities:FindByClassnameNearest("item_hlvr_crafting_currency_large", selfOrigin, EasyConvars:GetInt("resin_watch_radius"))
 
     ---@type EntityHandle
-    local nearest = nil
-    ---@type Vector
-    local difference = nil
-
-    if nearestSmall and nearestLarge then
-        local differenceSmall = nearestSmall:GetCenter() - selfOrigin
-        local differenceLarge = nearestLarge:GetCenter() - selfOrigin
-        if differenceLarge:Length() < differenceSmall:Length() then
-            nearest = nearestLarge
-            difference = differenceLarge
-        else
-            nearest = nearestSmall
-            difference = differenceSmall
-        end
-    else
-        nearest = nearestSmall or nearestLarge
-        if nearest then
-            difference = nearest:GetCenter() - selfOrigin
-        end
-    end
+    local nearest = Entities:FindByClassnameListNearest(self.trackingMode == "resin" and CLASS_LIST_RESIN or CLASS_LIST_AMMO_ITEMS, selfOrigin, EasyConvars:GetInt("resin_watch_radius"))
 
     if nearest then
+
+        ---@type Vector
+        local difference = nearest:GetCenter() - selfOrigin
 
         if self.__lastResinTracked ~= nearest then
             self.__lastResinTracked = nearest
@@ -202,7 +275,9 @@ function base:Think()
                     RESIN_NOTIFY_HAPTIC_SEQ:Fire(Player.SecondaryHand)
                 end
             end
-            self.compassEnt:SetSkin(0)
+            local skin = SKIN_COMPASS_RESIN
+            if self.trackingMode == "ammo" then skin = SKIN_COMPASS_AMMO end
+            self.compassEnt:SetSkin(skin)
         end
 
         local dir = difference:Normalized()
@@ -226,6 +301,10 @@ function base:Think()
         elseif zDiff < EasyConvars:GetFloat("resin_watch_level_down") then
             levelType = 2
         end
+        -- Adjust for ammo color
+        if self.trackingMode == "ammo" then
+            levelType = levelType + 3
+        end
 
         if self.__lastLevelType ~= levelType then
             self.__lastLevelType = levelType
@@ -235,9 +314,8 @@ function base:Think()
     else
         if self.__lastResinTracked ~= nil then
             self.__lastResinTracked = nil
-            self.compassEnt:SetSkin(1)
             self.__lastLevelType = 0
-            self.levelIndicatorEnt:SetSkin(0)
+            self:SetBlankVisuals()
         end
     end
 

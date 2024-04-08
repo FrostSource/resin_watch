@@ -20,23 +20,29 @@ EasyConvars:SetPersistent("resin_watch_level_up", true)
 EasyConvars:RegisterConvar("resin_watch_level_down", "-90", "How far below the watch resin is considered on another floor")
 EasyConvars:SetPersistent("resin_watch_level_down", true)
 
-EasyConvars:Register("resin_watch_inverted", "0", function (isInverted)
+EasyConvars:Register("resin_watch_inverted", "0", function (enabled)
     if not IsEntity(ResinWatch, true) then
-        warn("Resin watch does not exist in game!")
+        warn("Cannot set resin_watch_inverted, resin watch does not exist in game!")
         return
     end
 
     ResinWatch:AttachToHand()
 end, "Watch faces underneath the wrist")
 
-EasyConvars:Register("resin_watch_primary_hand", "0", function (usePrimary)
+EasyConvars:Register("resin_watch_primary_hand", "0", function (enabled)
     if not IsEntity(ResinWatch, true) then
-        warn("Resin watch does not exist in game!")
+        warn("Cannot set resin_watch_primary_hand, resin watch does not exist in game!")
         return
     end
 
     ResinWatch:AttachToHand()
 end, "Watch attaches to primary hand")
+
+EasyConvars:Register("resin_watch_allow_ammo_tracking", "1", function (enabled)
+    if IsEntity(ResinWatch, true) then
+        ResinWatch:SetTrackingMode("resin")
+    end
+end, "Allow ammo and items to be tracked by the watches alternate mode")
 
 ---Global entity for Resin Watch.
 ---@type ResinWatch
@@ -53,7 +59,7 @@ RegisterPlayerEventCallback("vr_player_ready", function (params)
     SpawnEntityFromTableAsynchronous("prop_dynamic", {
         targetname = "resin_watch_attached_to_hand",
         model = "models/resin_watch/resin_watch_base.vmdl",
-        vscripts = "resin_watch/entity/watch",
+        vscripts = "resin_watch/classes/watch",
         disableshadows = "1",
     }, function (spawnedEnt)
         ---@cast spawnedEnt ResinWatch

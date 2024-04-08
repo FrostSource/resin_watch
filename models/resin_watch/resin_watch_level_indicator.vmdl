@@ -47,6 +47,39 @@
 							},
 						]
 					},
+					{
+						_class = "MaterialGroup"
+						name = "blank_ammo"
+						remaps = 
+						[
+							{
+								from = "models/resin_watch/materials/resin_watch_compass_blank.vmat"
+								to = "models/resin_watch/materials/resin_watch_compass_blank_ammo.vmat"
+							},
+						]
+					},
+					{
+						_class = "MaterialGroup"
+						name = "up_ammo"
+						remaps = 
+						[
+							{
+								from = "models/resin_watch/materials/resin_watch_compass_blank.vmat"
+								to = "models/resin_watch/materials/resin_watch_level_indicator_up_ammo.vmat"
+							},
+						]
+					},
+					{
+						_class = "MaterialGroup"
+						name = "down_ammo"
+						remaps = 
+						[
+							{
+								from = "models/resin_watch/materials/resin_watch_compass_blank.vmat"
+								to = "models/resin_watch/materials/resin_watch_level_indicator_down_ammo.vmat"
+							},
+						]
+					},
 				]
 			},
 		]
