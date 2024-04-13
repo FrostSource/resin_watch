@@ -250,12 +250,17 @@ end
 
 ---Set the tracking mode.
 ---@param mode "resin"|"ammo"
-function base:SetTrackingMode(mode)
+---@param silent boolean?
+function base:SetTrackingMode(mode, silent)
     if not EasyConvars:GetBool("resin_watch_allow_ammo_tracking") and not EasyConvars:GetBool("resin_watch_allow_item_tracking") then
         mode = "resin"
     end
     -- Early exit if new mode isn't different
     if mode == self.trackingMode then return end
+
+    if not silent then
+        self:EmitSound("ResinWatch.TrackingModeToggle")
+    end
 
     self.trackingMode = mode
     self:SetBlankVisuals()
