@@ -103,7 +103,7 @@ end
 function base:OnSpawn(spawnkeys)
     -- Counter
     local panel = SpawnEntityFromTableSynchronous("prop_dynamic", {
-        targetname = "resin_watch_panel",
+        targetname = self:GetName().."_panel",
         model = "models/hands/counter_panels.vmdl",
         disableshadows = "1",
         bodygroups = "{\n\tcounter = 1\n}",
@@ -117,7 +117,7 @@ function base:OnSpawn(spawnkeys)
 
     -- Compass
     local compass = SpawnEntityFromTableSynchronous("prop_dynamic", {
-        targetname = "resin_watch_compass",
+        targetname = self:GetName().."_compass",
         model = "models/resin_watch/resin_watch_compass.vmdl",
         origin = self:GetAbsOrigin(),
         disableshadows = "1",
@@ -127,7 +127,7 @@ function base:OnSpawn(spawnkeys)
 
     -- Level indicator
     local level = SpawnEntityFromTableSynchronous("prop_dynamic", {
-        targetname = "resin_watch_level_indicator",
+        targetname = self:GetName().."_level_indicator",
         model = "models/resin_watch/resin_watch_level_indicator.vmdl",
         origin = self:GetAbsOrigin(),
         disableshadows = "1",
@@ -217,24 +217,28 @@ function base:SetTrackingMode(mode)
     -- Early exit if new mode isn't different
     if mode == self.trackingMode then return end
 
-    local indBlank, skinBlank = RESIN_COUNTER_INDEX_BLANK, SKIN_COMPASS_RESIN_BLANK
-    if mode == "ammo" then
-        indBlank, skinBlank = AMMO_COUNTER_INDEX_BLANK, SKIN_COMPASS_AMMO_BLANK
-    end
-
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterIcon="..indBlank)
-    self.compassEnt:SetSkin(skinBlank)
-
     self.trackingMode = mode
+    self:SetBlankVisuals()
 
     self:UpdateTrackedClassList()
     self:UpdateCounterPanel(true)
 end
 
+---Toggle the tracking mode between resin and ammo/items.
+function base:ToggleTrackingMode()
+    if self.trackingMode == "resin" then
+        self:SetTrackingMode("ammo")
+    else
+        self:SetTrackingMode("resin")
+    end
+end
+
 ---Set the indication visuals to blank, color based on tracking mode.
 function base:SetBlankVisuals()
-    self.compassEnt:SetSkin(self.trackingMode == "resin" and SKIN_COMPASS_RESIN_BLANK or SKIN_COMPASS_AMMO_BLANK)
-    self.levelIndicatorEnt:SetSkin(self.trackingMode == "resin" and SKIN_LEVEL_RESIN_BLANK or SKIN_LEVEL_AMMO_BLANK)
+    local isResin = self.trackingMode == "resin"
+    self.compassEnt:SetSkin(isResin and SKIN_COMPASS_RESIN_BLANK or SKIN_COMPASS_AMMO_BLANK)
+    self.levelIndicatorEnt:SetSkin(isResin and SKIN_LEVEL_RESIN_BLANK or SKIN_LEVEL_AMMO_BLANK)
+    self.panelEnt:EntFire("SetRenderAttribute", "$CounterIcon=" .. (isResin and RESIN_COUNTER_INDEX_BLANK or AMMO_COUNTER_INDEX_BLANK))
 end
 
 ---Get the list of classnames related to the current tracking mode.

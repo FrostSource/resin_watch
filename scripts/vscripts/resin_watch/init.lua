@@ -113,13 +113,8 @@ RegisterPlayerEventCallback("novr_player", function (params)
     end)
 
     Convars:RegisterCommand("resin_watch_novr_toggle_mode", function ()
-        print(IsEntity(ResinWatch, true))
         if IsEntity(ResinWatch, true) then
-            if ResinWatch.trackingMode == "resin" then
-                ResinWatch:SetTrackingMode("ammo")
-            else
-                ResinWatch:SetTrackingMode("resin")
-            end
+            ResinWatch:ToggleTrackingMode()
         end
     end, "", 0)
 end)
