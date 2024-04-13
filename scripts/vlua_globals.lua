@@ -1,1 +1,1 @@
-../../alyxlib/scripts/vlua_globals.lua
+C:/Program Files (x86)/Steam/steamapps/common/Half-Life Alyx/content/hlvr_addons/alyxlib/scripts/vlua_globals.lua

@@ -17,11 +17,11 @@ echo Symlinks have been removed, continue after uploading to workshop.
 PAUSE
 echo.
 
-mklink /d "scripts\vscripts\alyxlib" "..\..\..\alyxlib\scripts\vscripts\alyxlib"
+mklink /d "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\resin_watch\scripts\vscripts\alyxlib" "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\alyxlib\scripts\vscripts\alyxlib"
 echo.
-mklink "scripts\vlua_globals.lua" "..\..\alyxlib\scripts\vlua_globals.lua"
+mklink "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\resin_watch\scripts\vlua_globals.lua" "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\alyxlib\scripts\vlua_globals.lua"
 echo.
-mklink /d "scripts\vscripts\game" "..\..\..\alyxlib\scripts\vscripts\game"
+mklink /d "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\resin_watch\scripts\vscripts\game" "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\alyxlib\scripts\vscripts\game"
 echo.
 
 echo Symlinks reinstated! This window can now be closed.
