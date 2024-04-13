@@ -22,7 +22,7 @@ EasyConvars:SetPersistent("resin_watch_level_down", true)
 
 EasyConvars:Register("resin_watch_inverted", "0", function (enabled)
     if not IsEntity(ResinWatch, true) then
-        warn("Cannot set resin_watch_inverted, resin watch does not exist in game!")
+        EasyConvars:Warn("Cannot set resin_watch_inverted, resin watch does not exist in game!")
         return
     end
 
@@ -32,7 +32,7 @@ EasyConvars:SetPersistent("resin_watch_inverted", true)
 
 EasyConvars:Register("resin_watch_primary_hand", "0", function (enabled)
     if not IsEntity(ResinWatch, true) then
-        warn("Cannot set resin_watch_primary_hand, resin watch does not exist in game!")
+        EasyConvars:Warn("Cannot set resin_watch_primary_hand, resin watch does not exist in game!")
         return
     end
 
