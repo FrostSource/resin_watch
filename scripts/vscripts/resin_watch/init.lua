@@ -119,6 +119,8 @@ RegisterPlayerEventCallback("vr_player_ready", function (params)
     }, function (spawnedEnt)
         ---@cast spawnedEnt ResinWatch
         spawnedEnt:AttachToHand()
+        -- Manually track primary because watch is attached to hand after Ready function
+        RegisterPlayerEventCallback("primary_hand_changed", spawnedEnt._DoPrimaryHandChangeTracking, spawnedEnt)
         ResinWatch = spawnedEnt
     end, nil)
 

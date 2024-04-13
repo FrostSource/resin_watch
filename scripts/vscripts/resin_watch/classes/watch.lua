@@ -159,11 +159,16 @@ function base:OnReady(readyType)
         end, 0)
     end, self)
 
-    ---Moving watch to secondary hand.
-    ---@param params PLAYER_EVENT_PRIMARY_HAND_CHANGED
-    RegisterPlayerEventCallback("primary_hand_changed", function (params)
-        self:AttachToHand(Player.SecondaryHand)
-    end, self)
+    -- Automatically update on primary hand change only if this entity is attached to a hand
+    if self:GetAttachedHand() then
+        RegisterPlayerEventCallback("primary_hand_changed", self._DoPrimaryHandChangeTracking, self)
+    end
+end
+
+---Moving watch to secondary hand.
+---@param params PLAYER_EVENT_PRIMARY_HAND_CHANGED
+function base:_DoPrimaryHandChangeTracking(params)
+    self:AttachToHand()
 end
 
 ---Attach the watch to the desired hand.
@@ -193,6 +198,9 @@ function base:AttachToHand(hand, offset, angles, attachment)
     self:SetParent(hand:GetGlove(), attachment)
     self:SetLocalOrigin(offset)
     self:SetLocalQAngle(angles)
+
+    self:UpdateControllerInputs()
+end
 
 ---Gets the hand that this watch is attached to (if attached).
 ---@return EntityHandle?
@@ -347,8 +355,9 @@ function base:Think()
             self.__lastResinTracked = nearest
             if EasyConvars:GetBool("resin_watch_notify") then
                 self:EmitSound("ResinWatch.ResinTrackedBeep")
-                if Player.SecondaryHand then
-                    RESIN_NOTIFY_HAPTIC_SEQ:Fire(Player.SecondaryHand)
+                local attachedHand = self:GetAttachedHand()
+                if attachedHand then
+                    RESIN_NOTIFY_HAPTIC_SEQ:Fire(attachedHand)
                 end
             end
             local skin = SKIN_COMPASS_RESIN
