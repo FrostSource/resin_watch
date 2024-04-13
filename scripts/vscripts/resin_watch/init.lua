@@ -68,9 +68,40 @@ EasyConvars:Register("resin_watch_allow_item_tracking", "1", function (enabled)
 end, "Allow items to be tracked by the watch's' alternate tracking mode")
 EasyConvars:SetPersistent("resin_watch_allow_item_tracking", true)
 
+local DEFAULT_BUTTONS = DefaultTable({
+    [VR_CONTROLLER_TYPE_KNUCKLES] = DIGITAL_INPUT_ARM_XEN_GRENADE,
+    [VR_CONTROLLER_TYPE_RIFT_S] = DIGITAL_INPUT_USE_GRIP,
+}, DIGITAL_INPUT_ARM_XEN_GRENADE)
+
+EasyConvars:Register("resin_watch_toggle_button",
+-- Initializer
+function()
+    return DEFAULT_BUTTONS[Player:GetVRControllerType()]
+end,
+-- Main callback
+function (buttonStr)
+    local button = tonumber(buttonStr)
+    if not button then
+        warn("Value '"..buttonStr.."' is not a valid button ID, must be [0-27]!")
+        return
+    end
+
+    if not IsEntity(ResinWatch, true) then
+        EasyConvars:Warn("Cannot set resin_watch_toggle_button, resin watch does not exist in game!")
+        return
+    end
+
+    EasyConvars:SetRaw("resin_watch_toggle_button", button)
+    ResinWatch:UpdateControllerInputs()
+
+    return button
+end)
+EasyConvars:SetPersistent("resin_watch_toggle_button", true)
+
 ---Global entity for Resin Watch.
 ---@type ResinWatch
 _G.ResinWatch = nil
+
 
 ---@param params PLAYER_EVENT_VR_PLAYER_READY
 RegisterPlayerEventCallback("vr_player_ready", function (params)
@@ -92,6 +123,8 @@ RegisterPlayerEventCallback("vr_player_ready", function (params)
     end, nil)
 
 end)
+
+--- NO VR TESTING
 
 RegisterPlayerEventCallback("novr_player", function (params)
     EasyConvars:Register("resin_watch_novr_debug", "", function (enabled)

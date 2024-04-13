@@ -49,6 +49,9 @@ local CLASS_LIST_ITEMS = {
     "item_item_crate",
 }
 
+require "alyxlib.input.input"
+Input.AutoStart = true
+
 
 ---@class ResinWatch : EntityClass
 local base = entity("ResinWatch")
@@ -190,6 +193,35 @@ function base:AttachToHand(hand, offset, angles, attachment)
     self:SetParent(hand:GetGlove(), attachment)
     self:SetLocalOrigin(offset)
     self:SetLocalQAngle(angles)
+
+---Gets the hand that this watch is attached to (if attached).
+---@return EntityHandle?
+function base:GetAttachedHand()
+    local glove = self:GetMoveParent()
+    if glove and glove:GetClassname() == "hlvr_prop_renderable_glove" then
+        local hand = glove:GetMoveParent()
+        if hand and hand:GetClassname() == "hl_prop_vr_hand" then
+            return hand
+        end
+    end
+    return nil
+end
+
+function base:UpdateControllerInputs()
+
+    ---@TODO Is there a way to untrack the previous button only if no other mod is using it?
+    local button = EasyConvars:GetInt("resin_watch_toggle_button")
+    Input:TrackButton(button)
+
+    local hand = self:GetAttachedHand()
+    Input:UnregisterCallback(self._InputTrackingModeToggleCallback, self)
+    Input:RegisterCallback("press", hand, button, 2, self._InputTrackingModeToggleCallback, self)
+end
+
+---Internal callback for tracking mode toggle button press.
+---@param params INPUT_PRESS_CALLBACK
+function base:_InputTrackingModeToggleCallback(params)
+    self:ToggleTrackingMode()
 end
 
 ---Update the text panel on the watch with text.
