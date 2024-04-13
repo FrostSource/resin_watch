@@ -2,19 +2,26 @@
 @REM Run this file before uploading your addon to the workshop, then follow window instructions after uploading.
 @echo off
 
-rmdir "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\resin_watch\scripts\vscripts\alyxlib"
-del "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\resin_watch\scripts\vlua_globals.lua"
-rmdir "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\resin_watch\scripts\vscripts\game"
+
+IF NOT EXIST "..\alyxlib" (
+echo AlyxLib folder wasn't found, cannot perform this batch file! Please rerun alyxlib.py to setup correctly...
+PAUSE
+EXIT
+)
+
+rmdir "scripts\vscripts\alyxlib"
+del "scripts\vlua_globals.lua"
+rmdir "scripts\vscripts\game"
 
 echo Symlinks have been removed, continue after uploading to workshop.
 PAUSE
 echo.
 
-mklink /d "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\resin_watch\scripts\vscripts\game" "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\alyxlib\scripts\vscripts\game"
+mklink /d "scripts\vscripts\alyxlib" "..\..\..\alyxlib\scripts\vscripts\alyxlib"
 echo.
-mklink /d "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\resin_watch\scripts\vscripts\game" "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\alyxlib\scripts\vscripts\game"
+mklink "scripts\vlua_globals.lua" "..\..\alyxlib\scripts\vlua_globals.lua"
 echo.
-mklink /d "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\resin_watch\scripts\vscripts\game" "C:\Program Files (x86)\Steam\steamapps\common\Half-Life Alyx\content\hlvr_addons\alyxlib\scripts\vscripts\game"
+mklink /d "scripts\vscripts\game" "..\..\..\alyxlib\scripts\vscripts\game"
 echo.
 
 echo Symlinks reinstated! This window can now be closed.
