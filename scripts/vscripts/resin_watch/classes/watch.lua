@@ -235,7 +235,7 @@ function base:UpdateControllerInputs()
 
     local hand = self:GetAttachedHand()
     Input:StopListeningCallbackContext(self._InputTrackingModeToggleCallback, self)
-    Input:ListenToButton("press", hand, button, 1, self._InputTrackingModeToggleCallback, self)
+    Input:ListenToButton("press", hand, button, 2, self._InputTrackingModeToggleCallback, self)
 end
 
 ---Internal callback for tracking mode toggle button press.
