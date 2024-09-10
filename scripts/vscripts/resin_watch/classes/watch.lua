@@ -49,7 +49,10 @@ local CLASS_LIST_ITEMS = {
     "item_item_crate",
 }
 
-require "alyxlib.input.input"
+---The length of the model for calculating wrist attachment
+local MODEL_LENGTH = 3
+
+require "alyxlib.controls.input"
 Input.AutoStart = true
 
 
@@ -153,51 +156,65 @@ function base:OnReady(readyType)
     self:SetThink("ResinCountThink", "ResinWatchPanelThink", 0.1, self)
     self:ResumeThink()
 
-    RegisterPlayerEventCallback("player_drop_resin_in_backpack", function (params)
+    ListenToPlayerEvent("player_drop_resin_in_backpack", function (params)
         self:Delay(function()
             self:UpdateCounterPanel()
         end, 0)
     end, self)
 
-    -- Automatically update on primary hand change only if this entity is attached to a hand
-    if self:GetAttachedHand() then
-        RegisterPlayerEventCallback("primary_hand_changed", self._DoPrimaryHandChangeTracking, self)
+    if self:IsAttachedToHand() then
+        self:UpdateControllerInputs()
     end
+
+    self:ForceUpdateTracking()
+
+    -- -- Automatically update on primary hand change only if this entity is attached to a hand
+    -- if self:GetAttachedHand() then
+    --     RegisterPlayerEventCallback("primary_hand_changed", self._DoPrimaryHandChangeTracking, self)
+    -- end
 end
 
----Moving watch to secondary hand.
----@param params PLAYER_EVENT_PRIMARY_HAND_CHANGED
-function base:_DoPrimaryHandChangeTracking(params)
-    self:AttachToHand()
-end
+-- ---Moving watch to secondary hand.
+-- ---@param params PLAYER_EVENT_PRIMARY_HAND_CHANGED
+-- function base:_DoPrimaryHandChangeTracking(params)
+--     self:AttachToHand()
+-- end
 
 ---Attach the watch to the desired hand.
----@param hand? CPropVRHand # Hand to attach to. If not given it will choose a hand based on convars.
----@param offset? Vector # Optional offset vector.
----@param angles? QAngle # Optional angles.
----@param attachment? string # Optional attachment name.
-function base:AttachToHand(hand, offset, angles, attachment)
+---@param hand? CPropVRHand|"primary"|"secondary" # Hand to attach to. If not given it will choose a hand based on convars.
+---@param inverted? boolean # If the watch should face underneath the wrist. If not given it will be based on convars.
+function base:AttachToHand(hand, inverted)
+    local offset,angles,handType
     if hand == nil then
-        hand = EasyConvars:GetBool("resin_watch_primary_hand") and Player.PrimaryHand or Player.SecondaryHand
+        handType = EasyConvars:GetBool("resin_watch_primary_hand") and "primary" or "secondary"
+    elseif IsEntity(hand) then
+            handType = (hand == Player.PrimaryHand) and "primary" or "secondary"
+    else
+        handType = hand
     end
 
+    hand = handType == "primary" and Player.PrimaryHand or Player.SecondaryHand
+
     if hand == Player.LeftHand then
-        attachment = attachment or "item_holder_l"
         offset = offset or Vector(0.6, 1.2, 0)
         angles = angles or QAngle(-7.07305, 0, -90)
     else
-        attachment = attachment or "item_holder_r"
         offset = offset or Vector(0.6, 1.2, 0)
         angles = angles or QAngle(-7.07305-180, 0, -90)
     end
-    -- if self.attachInverted then
-    if EasyConvars:GetBool("resin_watch_inverted") then
+
+    if inverted or (inverted == nil and EasyConvars:GetBool("resin_watch_inverted")) then
         offset.y = -offset.y
         angles = RotateOrientation(angles, QAngle(180, 180, 0))
     end
-    self:SetParent(hand:GetGlove(), attachment)
-    self:SetLocalOrigin(offset)
-    self:SetLocalQAngle(angles)
+
+    if WristAttachments:IsEntityAttached(self) then
+        WristAttachments:SetHand(self, handType, offset, angles)
+    else
+        WristAttachments:Add(self, handType, MODEL_LENGTH, 0, offset, angles)
+    end
+
+    self:SetOwner(Player)
 
     self:UpdateControllerInputs()
 end
@@ -215,20 +232,29 @@ function base:GetAttachedHand()
     return nil
 end
 
+---Gets if the watch is currently attached to a player hand.
+---@return boolean
+function base:IsAttachedToHand()
+    return self:GetAttachedHand() ~= nil
+end
+
 function base:UpdateControllerInputs()
 
     ---@TODO Is there a way to untrack the previous button only if no other mod is using it?
     local button = EasyConvars:GetInt("resin_watch_toggle_button")
     Input:TrackButton(button)
 
+    print("setting up inputs", button)
+    print(self:GetMoveParent())
     local hand = self:GetAttachedHand()
-    Input:UnregisterCallback(self._InputTrackingModeToggleCallback, self)
-    Input:RegisterCallback("press", hand, button, 2, self._InputTrackingModeToggleCallback, self)
+    Input:StopListeningCallbackContext(self._InputTrackingModeToggleCallback, self)
+    Input:ListenToButton("press", hand, button, 1, self._InputTrackingModeToggleCallback, self)
 end
 
 ---Internal callback for tracking mode toggle button press.
 ---@param params INPUT_PRESS_CALLBACK
 function base:_InputTrackingModeToggleCallback(params)
+    print("PRESSED")
     self:ToggleTrackingMode()
 end
 
@@ -263,9 +289,15 @@ function base:SetTrackingMode(mode, silent)
     end
 
     self.trackingMode = mode
-    self:SetBlankVisuals()
 
+    self:ForceUpdateTracking()
+end
+
+---Forces the watch to update all tracking entities and visuals.
+function base:ForceUpdateTracking()
+    self:SetBlankVisuals()
     self:UpdateTrackedClassList()
+    self:UpdateTrackedEntities()
     self:UpdateCounterPanel(true)
 end
 
@@ -343,13 +375,66 @@ function base:ResinCountThink()
     return 4
 end
 
+---@type EntityHandle[]
+local allExistingTrackedEntities = {}
+
+local TRACKED_ENTITIES_UPDATE_TIME = 60
+local NEAREST_ENTITY_UPDATE_TIME = 1
+
+local trackedEntitiesTime = 0
+local nearestEntityTime = 0
+
+function base:UpdateTrackedEntities()
+    allExistingTrackedEntities = {}
+    for _, class in ipairs(self.__currentTrackedClasses) do
+        vlua.extend(allExistingTrackedEntities, Entities:FindAllByClassname(class))
+    end
+    print("UPDATETRACKED", #allExistingTrackedEntities)
+end
+
+---Get if an entity is attached to a player weapon (i.e. ammo clip).
+---@param ent EntityHandle
+---@return boolean
+local function isAttachedToWeapon(ent)
+    local parent = ent:GetRootMoveParent()
+    if parent and
+    (parent:GetClassname() == "hlvr_weapon_energygun"
+    or parent:GetClassname() == "hlvr_weapon_shotgun"
+    or parent:GetClassname() == "hlvr_weapon_rapidfire")
+    then
+        return true
+    end
+    return false
+end
+
+local function getNearestEntity(origin, maxRadius)
+    local bestEnt = nil
+    local bestDist = math.huge
+    for index, ent in ipairs(allExistingTrackedEntities) do
+        if IsValidEntity(ent) then
+            local dist = VectorDistance(ent:GetOrigin(), origin)
+            if dist <= bestDist and dist <= maxRadius and not isAttachedToWeapon(ent) then
+                bestEnt = ent
+                bestDist = dist
+            end
+        end
+    end
+
+    return bestEnt
+end
+
 ---Main entity think function. Think state is saved between loads
 function base:Think()
     local selfOrigin = self:GetAbsOrigin()
 
-    ---@type EntityHandle
-    local nearest = Entities:FindByClassnameListNearest(self.__currentTrackedClasses, selfOrigin, EasyConvars:GetInt("resin_watch_radius"))
-    -- local nearest = Entities:FindByClassnameListNearest(self.trackingMode == "resin" and CLASS_LIST_RESIN or CLASS_LIST_AMMO_ITEMS, selfOrigin, EasyConvars:GetInt("resin_watch_radius"))
+    if Time() - trackedEntitiesTime > TRACKED_ENTITIES_UPDATE_TIME then
+        self:UpdateTrackedEntities()
+        trackedEntitiesTime = Time()
+    end
+    -- if Time() - nearestEntityTime > NEAREST_ENTITY_UPDATE_TIME then
+        local nearest = getNearestEntity(selfOrigin, EasyConvars:GetInt("resin_watch_radius"))
+    --     nearestEntityTime = Time()
+    -- end
 
     if nearest then
 
