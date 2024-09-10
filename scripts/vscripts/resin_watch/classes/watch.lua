@@ -374,17 +374,20 @@ function base:UpdateTrackedEntities()
     end
 end
 
----Get if an entity is attached to a player weapon (i.e. ammo clip).
+---Get if an entity is attached to player (i.e. ammo clip, wrist pocket item).
 ---@param ent EntityHandle
 ---@return boolean
-local function isAttachedToWeapon(ent)
+local function isAttachedToPlayer(ent)
     local parent = ent:GetRootMoveParent()
-    if parent and
-    (parent:GetClassname() == "hlvr_weapon_energygun"
-    or parent:GetClassname() == "hlvr_weapon_shotgun"
-    or parent:GetClassname() == "hlvr_weapon_rapidfire")
-    then
-        return true
+    if parent then
+        local pclass = parent:GetClassname()
+        if (pclass == "hlvr_weapon_energygun"
+        or pclass == "hlvr_weapon_shotgun"
+        or pclass== "hlvr_weapon_rapidfire"
+        or pclass == "hl_prop_vr_hand")
+        then
+            return true
+        end
     end
     return false
 end
@@ -395,7 +398,7 @@ local function getNearestEntity(origin, maxRadius)
     for index, ent in ipairs(allExistingTrackedEntities) do
         if IsValidEntity(ent) then
             local dist = VectorDistance(ent:GetOrigin(), origin)
-            if dist <= bestDist and dist <= maxRadius and not isAttachedToWeapon(ent) then
+            if dist <= bestDist and dist <= maxRadius and not isAttachedToPlayer(ent) then
                 bestEnt = ent
                 bestDist = dist
             end
