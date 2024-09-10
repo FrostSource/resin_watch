@@ -167,18 +167,7 @@ function base:OnReady(readyType)
     end
 
     self:ForceUpdateTracking()
-
-    -- -- Automatically update on primary hand change only if this entity is attached to a hand
-    -- if self:GetAttachedHand() then
-    --     RegisterPlayerEventCallback("primary_hand_changed", self._DoPrimaryHandChangeTracking, self)
-    -- end
 end
-
--- ---Moving watch to secondary hand.
--- ---@param params PLAYER_EVENT_PRIMARY_HAND_CHANGED
--- function base:_DoPrimaryHandChangeTracking(params)
---     self:AttachToHand()
--- end
 
 ---Attach the watch to the desired hand.
 ---@param hand? CPropVRHand|"primary"|"secondary" # Hand to attach to. If not given it will choose a hand based on convars.
@@ -244,8 +233,6 @@ function base:UpdateControllerInputs()
     local button = EasyConvars:GetInt("resin_watch_toggle_button")
     Input:TrackButton(button)
 
-    print("setting up inputs", button)
-    print(self:GetMoveParent())
     local hand = self:GetAttachedHand()
     Input:StopListeningCallbackContext(self._InputTrackingModeToggleCallback, self)
     Input:ListenToButton("press", hand, button, 1, self._InputTrackingModeToggleCallback, self)
@@ -254,7 +241,6 @@ end
 ---Internal callback for tracking mode toggle button press.
 ---@param params INPUT_PRESS_CALLBACK
 function base:_InputTrackingModeToggleCallback(params)
-    print("PRESSED")
     self:ToggleTrackingMode()
 end
 
@@ -355,7 +341,6 @@ end
 ---Updates the digit counter panel with the current number of tracked entities in the map.
 ---@param force? boolean # If true the number will be updated even if the number of entities hasn't changed.
 function base:UpdateCounterPanel(force)
-    -- local count = countClassList(self.trackingMode == "resin" and CLASS_LIST_RESIN or CLASS_LIST_AMMO_ITEMS)
     local count = countClassList(self.__currentTrackedClasses)
 
     if force then
@@ -379,17 +364,14 @@ end
 local allExistingTrackedEntities = {}
 
 local TRACKED_ENTITIES_UPDATE_TIME = 60
-local NEAREST_ENTITY_UPDATE_TIME = 1
 
 local trackedEntitiesTime = 0
-local nearestEntityTime = 0
 
 function base:UpdateTrackedEntities()
     allExistingTrackedEntities = {}
     for _, class in ipairs(self.__currentTrackedClasses) do
         vlua.extend(allExistingTrackedEntities, Entities:FindAllByClassname(class))
     end
-    print("UPDATETRACKED", #allExistingTrackedEntities)
 end
 
 ---Get if an entity is attached to a player weapon (i.e. ammo clip).
