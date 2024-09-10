@@ -3,7 +3,7 @@
 -- alyxlib can only run on server
 if IsClient() then return end
 -- Load alyxlib before using it, in case this mod loads before the alyxlib mod.
-require("alyxlib.core")
+require("alyxlib.init")
 
 -- execute code or load mod libraries here
 require "resin_watch.classes.watch"
@@ -20,52 +20,64 @@ EasyConvars:SetPersistent("resin_watch_level_up", true)
 EasyConvars:RegisterConvar("resin_watch_level_down", "-90", "How far below the watch resin is considered on another floor")
 EasyConvars:SetPersistent("resin_watch_level_down", true)
 
-EasyConvars:Register("resin_watch_inverted", "0", function (enabled)
-    if not IsEntity(ResinWatch, true) then
+EasyConvars:RegisterConvar("resin_watch_inverted", "0", "Watch faces underneath the wrist", nil,
+function (newVal, oldVal)
+    if not GetResinWatch() then
         EasyConvars:Warn("Cannot set resin_watch_inverted, resin watch does not exist in game!")
-        return
+        return oldVal
     end
 
     ResinWatch:AttachToHand()
-end, "Watch faces underneath the wrist")
+end)
 EasyConvars:SetPersistent("resin_watch_inverted", true)
 
-EasyConvars:Register("resin_watch_primary_hand", "0", function (enabled)
-    if not IsEntity(ResinWatch, true) then
+EasyConvars:RegisterConvar("resin_watch_primary_hand", "0", "Watch attaches to primary hand", nil,
+function (newVal, oldVal)
+    if not GetResinWatch() then
         EasyConvars:Warn("Cannot set resin_watch_primary_hand, resin watch does not exist in game!")
-        return
+        return oldVal
     end
 
     ResinWatch:AttachToHand()
-end, "Watch attaches to primary hand")
+end)
 EasyConvars:SetPersistent("resin_watch_primary_hand", true)
 
-EasyConvars:Register("resin_watch_allow_ammo_tracking", "1", function (enabled)
-    EasyConvars:SetRaw("resin_watch_allow_ammo_tracking", enabled)
+EasyConvars:RegisterConvar("resin_watch_allow_ammo_tracking", "1", "Allow ammo to be tracked by the watch's alternate tracking mode", nil,
+function (newVal, oldVal)
+    -- EasyConvars:SetRaw("resin_watch_allow_ammo_tracking", enabled)
+    if not GetResinWatch() then
+        EasyConvars:Warn("Cannot set resin_watch_allow_ammo_tracking, resin watch does not exist in game!")
+        return oldVal
+    end
 
-    if IsEntity(ResinWatch, true) then
+    -- if IsEntity(ResinWatch, true) then
         ResinWatch:UpdateTrackedClassList()
         ResinWatch:UpdateCounterPanel()
-        enabled = truthy(enabled)
-        if not enabled and not EasyConvars:GetBool("resin_watch_allow_item_tracking") then
+        -- enabled = truthy(enabled)
+        if not truthy(newVal) and not EasyConvars:GetBool("resin_watch_allow_item_tracking") then
             ResinWatch:SetTrackingMode("resin")
         end
-    end
-end, "Allow ammo to be tracked by the watch's alternate tracking mode")
+    -- end
+end)
 EasyConvars:SetPersistent("resin_watch_allow_ammo_tracking", true)
 
-EasyConvars:Register("resin_watch_allow_item_tracking", "1", function (enabled)
-    EasyConvars:SetRaw("resin_watch_allow_item_tracking", enabled)
+EasyConvars:RegisterConvar("resin_watch_allow_item_tracking", "1", "Allow items to be tracked by the watch's' alternate tracking mode", nil,
+function (newVal, oldVal)
+    -- EasyConvars:SetRaw("resin_watch_allow_item_tracking", enabled)
+    if not GetResinWatch() then
+        EasyConvars:Warn("Cannot set resin_watch_allow_item_tracking, resin watch does not exist in game!")
+        return oldVal
+    end
 
-    if IsEntity(ResinWatch, true) then
+    -- if IsEntity(ResinWatch, true) then
         ResinWatch:UpdateTrackedClassList()
         ResinWatch:UpdateCounterPanel()
-        enabled = truthy(enabled)
-        if not enabled and not EasyConvars:GetBool("resin_watch_allow_ammo_tracking") then
+        -- enabled = truthy(enabled)
+        if not truthy(newVal) and not EasyConvars:GetBool("resin_watch_allow_ammo_tracking") then
             ResinWatch:SetTrackingMode("resin")
         end
-    end
-end, "Allow items to be tracked by the watch's' alternate tracking mode")
+    -- end
+end)
 EasyConvars:SetPersistent("resin_watch_allow_item_tracking", true)
 
 local DEFAULT_BUTTONS = DefaultTable({
@@ -73,38 +85,60 @@ local DEFAULT_BUTTONS = DefaultTable({
     [VR_CONTROLLER_TYPE_RIFT_S] = DIGITAL_INPUT_USE_GRIP,
 }, DIGITAL_INPUT_ARM_XEN_GRENADE)
 
-EasyConvars:Register("resin_watch_toggle_button",
+EasyConvars:RegisterConvar("resin_watch_toggle_button",
 -- Initializer
 function()
+    print("TOGGLE BUTTON INIT", DEFAULT_BUTTONS[Player:GetVRControllerType()])
     return DEFAULT_BUTTONS[Player:GetVRControllerType()]
 end,
+"", nil,
 -- Main callback
-function (buttonStr)
-    local button = tonumber(buttonStr)
-    if not button then
-        warn("Value '"..buttonStr.."' is not a valid button ID, must be [0-27]!")
-        return
+function (newVal, oldVal)
+    local button = tonumber(newVal)
+    if not button or button < 0 or button > 27 then
+        warn("Value '"..newVal.."' is not a valid button ID, must be [0-27]!")
+        return oldVal
     end
 
-    if not IsEntity(ResinWatch, true) then
+    if not GetResinWatch() then
         EasyConvars:Warn("Cannot set resin_watch_toggle_button, resin watch does not exist in game!")
-        return
+        return oldVal
     end
 
-    EasyConvars:SetRaw("resin_watch_toggle_button", button)
+    -- EasyConvars:SetRaw("resin_watch_toggle_button", button)
     ResinWatch:UpdateControllerInputs()
 
-    return button
+    -- return button
 end)
 EasyConvars:SetPersistent("resin_watch_toggle_button", true)
 
----Global entity for Resin Watch.
+---Global entity for Resin Watch attached to the player wrist.
 ---@type ResinWatch
 _G.ResinWatch = nil
 
+---
+---Attempts to find the resin watch attached to the player wrist.
+---
+---@return ResinWatch?
+function GetResinWatch()
+    if not IsEntity(ResinWatch, true) then
+        for i = 1, 2 do
+            for _, child in ipairs(Player.Hands[i]) do
+                if isinstance(child, "ResinWatch") then
+                    print("FOUND RESIN WATCH")
+                    ResinWatch = child
+                    return child
+                end
+            end
+        end
+    end
+
+    return ResinWatch
+end
+
 
 ---@param params PLAYER_EVENT_VR_PLAYER_READY
-RegisterPlayerEventCallback("vr_player_ready", function (params)
+ListenToPlayerEvent("vr_player_ready", function (params)
     if Entities:FindByName(nil, watch_name) then
         return
     end
@@ -119,8 +153,8 @@ RegisterPlayerEventCallback("vr_player_ready", function (params)
     }, function (spawnedEnt)
         ---@cast spawnedEnt ResinWatch
         spawnedEnt:AttachToHand()
-        -- Manually track primary because watch is attached to hand after Ready function
-        RegisterPlayerEventCallback("primary_hand_changed", spawnedEnt._DoPrimaryHandChangeTracking, spawnedEnt)
+        -- -- Manually track primary because watch is attached to hand after Ready function
+        -- RegisterPlayerEventCallback("primary_hand_changed", spawnedEnt._DoPrimaryHandChangeTracking, spawnedEnt)
         ResinWatch = spawnedEnt
     end, nil)
 
@@ -128,7 +162,7 @@ end)
 
 --- NO VR TESTING
 
-RegisterPlayerEventCallback("novr_player", function (params)
+ListenToPlayerEvent("novr_player", function (params)
     EasyConvars:Register("resin_watch_novr_debug", "", function (enabled)
         enabled = truthy(enabled)
         if enabled then

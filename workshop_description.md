@@ -16,6 +16,16 @@ When resin is far enough above or below the watch, a level indicator at the corn
 
 As you explore the map your resin watch will beep and vibrate your controller whenever a new piece of resin is nearby to notify you.
 
+In order to track ammo and items you must double-press the mode switching action:
+
+Valve Index Touch controllers = Arm Xen Grenade (squeeze the trigger twice)
+Rift S Touch controllers = Use Grip (squeeze the grip twice)
+All other controllers = Arm Xen Grenade (controller dependant)
+*(If you have rebinded your controller actions then the button might be different for you)*
+*(If you can a recommendation for a default action on a particular controller please let me know)*
+
+Your Resin Watch will switch to an orange color and start tracking nearby items. You can change the behavior of its tracking using the console commands listed below.
+
 [h2]Console Commands[/h2]
 
 If you don't know how to use the console, follow this guide: https://steamcommunity.com/sharedfiles/filedetails/?id=2040205272
@@ -53,10 +63,27 @@ Default = -90
 How far below the watch resin is considered on a lower floor. Used for the level indicator arrow on the watch.
 [i]This convar is persistent with your save file.[/i]
 
+[*][b]resin_watch_allow_ammo_tracking[/b]
+Default = 1
+Allow ammo to be tracked by the watch's alternate tracking mode.
+[i]This convar is persistent with your save file.[/i]
+
+[*][b]resin_watch_allow_item_tracking[/b]
+Default = 1
+Allow items to be tracked by the watch's' alternate tracking mode (grenades, healthvials, etc).
+[i]This convar is persistent with your save file.[/i]
+
+[*][b]resin_watch_toggle_button[/b]
+Default = Grip button for Rift S, Arm Xen Grenade button for all others
+Sets the digital action which must be double tapped to change the tracking mode on the Resin Watch.
+To figure out the value of the button you want to use, visit The [url=https://developer.valvesoftware.com/wiki/Half-Life:_Alyx_Workshop_Tools/Scripting_API#Digital_Input_Actions]Valve Software Wiki, Digital Input Actions[/url] section and choose the number in the **Value** column next to the action you want.
+[i]This convar is persistent with your save file.[/i]
+
 [/list]
 
 [hr][/hr]
-Console commands can be set in the launch options for Half-Life: Alyx, just put a hyphen before each name and the value after, e.g. [b]-resin_watch_primary_hand 1[/b]
+Console commands can be set in the [url=https://help.steampowered.com/faqs/view/7D01-D2DD-D75E-2955]launch options[/url] for Half-Life: Alyx, just put a hyphen before each name and the value after, e.g. [b]-resin_watch_primary_hand 1[/b]
+They can also be added to your [b]Half-Life Alyx\game\hlvr\cfg\skill.cfg[/b] file, one per line without the hyphen, e.g. [b]resin_watch_primary_hand 1[/b]
 
 [h2]Source Code[/h2]
 
@@ -68,4 +95,4 @@ The watch model has no underside and was quickly put together by modifying a bas
 
 [strike]The directional indicator does not correctly point to resin when the watch is upside down (hard to notice unless you hold the watch over your head with inverted mode).[/strike]
 
-The watch will not track resin that has not been spawned yet, because of this the counter might not appear consistent but this is normal behaviour.
+The watch cannot track resin or items that have not been spawned yet. Because of this the counter might not appear consistent but this is normal behaviour.
