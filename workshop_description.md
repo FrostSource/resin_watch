@@ -1,8 +1,8 @@
 [h1]Resin Watch[/h1]
 
-Keep track of resin in the map using this watch with a nearby indicator and total resin counter so you'll never miss an upgrade!
+Keep track of resin, ammo and items in any map using this watch which comes equipped with a nearby indicator and total counter so you'll never miss an upgrade or grenade!
 
-[i]This addon is compatible with Scalable Init Support but does not require it.[/i]
+[i]This addon require AlyxLib to work.[/i]
 
 [img]https://steamuserimages-a.akamaihd.net/ugc/2312102971535718159/B40340B355316F302AC1910CF8464CA2FA204EC1/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img]
 
@@ -96,3 +96,9 @@ The watch model has no underside and was quickly put together by modifying a bas
 [strike]The directional indicator does not correctly point to resin when the watch is upside down (hard to notice unless you hold the watch over your head with inverted mode).[/strike]
 
 The watch cannot track resin or items that have not been spawned yet. Because of this the counter might not appear consistent but this is normal behaviour.
+
+[h2]Getting Help[/h2]
+
+Please feel free to reach out either by commenting below or messaging me on the Discord server!
+
+[url=https://discord.gg/42SC3Wyjv4][img]https://steamuserimages-a.akamaihd.net/ugc/2397692528302959470/036A75FE4B2E8CD2224F8B62E7CEBEE649493C40/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img][/url]
