@@ -96,10 +96,7 @@ function (newVal, oldVal)
         return oldVal
     end
 
-    -- EasyConvars:SetRaw("resin_watch_toggle_button", button)
     ResinWatch:UpdateControllerInputs()
-
-    -- return button
 end)
 EasyConvars:SetPersistent("resin_watch_toggle_button", true)
 
@@ -143,8 +140,6 @@ ListenToPlayerEvent("vr_player_ready", function (params)
     }, function (spawnedEnt)
         ---@cast spawnedEnt ResinWatch
         spawnedEnt:AttachToHand()
-        -- -- Manually track primary because watch is attached to hand after Ready function
-        -- RegisterPlayerEventCallback("primary_hand_changed", spawnedEnt._DoPrimaryHandChangeTracking, spawnedEnt)
         ResinWatch = spawnedEnt
     end, nil)
 
