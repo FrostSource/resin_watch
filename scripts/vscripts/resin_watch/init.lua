@@ -153,7 +153,7 @@ end)
 --- NO VR TESTING
 
 ListenToPlayerEvent("novr_player", function (params)
-    EasyConvars:Register("resin_watch_novr_debug", "", function (enabled)
+    Convars:RegisterCommand("resin_watch_novr_debug", function (enabled)
         enabled = truthy(enabled)
         if enabled then
             SpawnEntityFromTableAsynchronous("prop_dynamic", {
@@ -169,7 +169,7 @@ ListenToPlayerEvent("novr_player", function (params)
                 ResinWatch = spawnedEnt
             end, nil)
         end
-    end)
+    end, "", 0)
 
     Convars:RegisterCommand("resin_watch_novr_toggle_mode", function ()
         if IsEntity(ResinWatch, true) then
