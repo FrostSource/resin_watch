@@ -1,3 +1,11 @@
+Update 4:
+
+Lowered the entity tracking update time from 60 seconds to 30 seconds. Entities that spawn in mid-game will take up to this long to be recognized.
+
+Fixed the entity tracking not updating when changing resin_watch_allow_ammo_tracking or resin_watch_allow_item_tracking.
+
+Moved the watch closer to the watch like it used to be.
+
 Update 3:
 
 This addon has been completely overhauled to use the new AlyxLib scripting system. It requires the AlyxLib addon to be downloaded and enabled.
