@@ -363,7 +363,7 @@ end
 ---@type EntityHandle[]
 local allExistingTrackedEntities = {}
 
-local TRACKED_ENTITIES_UPDATE_TIME = 60
+local TRACKED_ENTITIES_UPDATE_TIME = 30
 
 local trackedEntitiesTime = 0
 
