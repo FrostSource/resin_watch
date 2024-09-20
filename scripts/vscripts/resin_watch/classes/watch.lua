@@ -50,7 +50,7 @@ local CLASS_LIST_ITEMS = {
 }
 
 ---The length of the model for calculating wrist attachment
-local MODEL_LENGTH = 3
+local MODEL_LENGTH = 1.5
 
 require "alyxlib.controls.input"
 Input.AutoStart = true
