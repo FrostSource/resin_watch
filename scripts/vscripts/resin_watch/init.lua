@@ -77,7 +77,10 @@ EasyConvars:SetPersistent("resin_watch_allow_item_tracking", true)
 EasyConvars:RegisterConvar("resin_watch_toggle_button",
 -- Initializer
 function()
-    return DEFAULT_BUTTONS[Player:GetVRControllerType()]
+    return DefaultTable({
+        [VR_CONTROLLER_TYPE_KNUCKLES] = DIGITAL_INPUT_ARM_XEN_GRENADE,
+        [VR_CONTROLLER_TYPE_RIFT_S] = DIGITAL_INPUT_USE_GRIP,
+    }, DIGITAL_INPUT_ARM_XEN_GRENADE)[Player:GetVRControllerType()]
 end,
 "", nil,
 -- Main callback
