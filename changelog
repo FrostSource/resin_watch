@@ -1,0 +1,22 @@
+Update 3:
+
+This addon has been completely overhauled to use the new AlyxLib scripting system. It requires the AlyxLib addon to be downloaded and enabled.
+
+Added the ability to track ammo and items with an alternate tracking mode.
+
+Added console variables to disable ammo or item tracking if desired.
+
+Moved the attaching to the new Wrist Attachment class in AlyxLib.
+
+
+[b]The transition to the new AlyxLib API is a complex update so please bear with me during this time. I do this as a hobby and cannot always dedicate my time to fixes.[/b]
+
+Update 2:
+
+Further fix for Scalable Init Support.
+
+Due to the issue only being present in workshop downloads, updates will continue as I narrow down the exact cause.
+
+Update 1:
+
+Fixed script discrepancy which stopped Scalable Init Support from working. The Body Holsters mod now works alongside Resin Watch.
