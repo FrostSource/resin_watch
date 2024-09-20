@@ -45,46 +45,34 @@ EasyConvars:SetPersistent("resin_watch_primary_hand", true)
 
 EasyConvars:RegisterConvar("resin_watch_allow_ammo_tracking", "1", "Allow ammo to be tracked by the watch's alternate tracking mode", nil,
 function (newVal, oldVal)
-    -- EasyConvars:SetRaw("resin_watch_allow_ammo_tracking", enabled)
     if not GetResinWatch() then
         EasyConvars:Warn("Cannot set resin_watch_allow_ammo_tracking, resin watch does not exist in game!")
         return oldVal
     end
 
-    -- if IsEntity(ResinWatch, true) then
-        ResinWatch:UpdateTrackedClassList()
-        ResinWatch:UpdateCounterPanel()
-        -- enabled = truthy(enabled)
-        if not truthy(newVal) and not EasyConvars:GetBool("resin_watch_allow_item_tracking") then
-            ResinWatch:SetTrackingMode("resin")
-        end
-    -- end
+    ResinWatch:ForceUpdateTracking()
+
+    if not truthy(newVal) and not EasyConvars:GetBool("resin_watch_allow_item_tracking") then
+        ResinWatch:SetTrackingMode("resin")
+    end
 end)
 EasyConvars:SetPersistent("resin_watch_allow_ammo_tracking", true)
 
-EasyConvars:RegisterConvar("resin_watch_allow_item_tracking", "1", "Allow items to be tracked by the watch's' alternate tracking mode", nil,
+EasyConvars:RegisterConvar("resin_watch_allow_item_tracking", "1", "Allow items to be tracked by the watch's alternate tracking mode", nil,
 function (newVal, oldVal)
-    -- EasyConvars:SetRaw("resin_watch_allow_item_tracking", enabled)
+
     if not GetResinWatch() then
         EasyConvars:Warn("Cannot set resin_watch_allow_item_tracking, resin watch does not exist in game!")
         return oldVal
     end
 
-    -- if IsEntity(ResinWatch, true) then
-        ResinWatch:UpdateTrackedClassList()
-        ResinWatch:UpdateCounterPanel()
-        -- enabled = truthy(enabled)
-        if not truthy(newVal) and not EasyConvars:GetBool("resin_watch_allow_ammo_tracking") then
-            ResinWatch:SetTrackingMode("resin")
-        end
-    -- end
+    ResinWatch:ForceUpdateTracking()
+
+    if not truthy(newVal) and not EasyConvars:GetBool("resin_watch_allow_ammo_tracking") then
+        ResinWatch:SetTrackingMode("resin")
+    end
 end)
 EasyConvars:SetPersistent("resin_watch_allow_item_tracking", true)
-
-local DEFAULT_BUTTONS = DefaultTable({
-    [VR_CONTROLLER_TYPE_KNUCKLES] = DIGITAL_INPUT_ARM_XEN_GRENADE,
-    [VR_CONTROLLER_TYPE_RIFT_S] = DIGITAL_INPUT_USE_GRIP,
-}, DIGITAL_INPUT_ARM_XEN_GRENADE)
 
 EasyConvars:RegisterConvar("resin_watch_toggle_button",
 -- Initializer
