@@ -14,17 +14,12 @@ local AMMO_COUNTER_INDEX_0 = 16
 local AMMO_COUNTER_INDEX_9 = 25
 local AMMO_COUNTER_INDEX_BLANK = 27
 
-local SKIN_LEVEL_RESIN_BLANK = 0
-local SKIN_LEVEL_RESIN_UP = 1
-local SKIN_LEVEL_RESIN_DOWN = 2
-local SKIN_LEVEL_AMMO_BLANK = 3
-local SKIN_LEVEL_AMMO_UP = 4
-local SKIN_LEVEL_AMMO_DOWN = 5
-
 local SKIN_COMPASS_RESIN = 0
 local SKIN_COMPASS_RESIN_BLANK = 1
 local SKIN_COMPASS_AMMO = 2
 local SKIN_COMPASS_AMMO_BLANK = 3
+
+local BODY_WATCH_MODE = 1
 
 local CLASS_LIST_RESIN = {
     "item_hlvr_crafting_currency_small",
@@ -63,17 +58,9 @@ local base = entity("ResinWatch")
 ---@type EntityHandle
 base.compassEnt = nil
 
----Text panel parented to the watch.
----@type EntityHandle
-base.panelEnt = nil
-
 ---The type of entity to track.
 ---@type "resin"|"ammo"
 base.trackingMode = "resin"
-
----Level indicator parented to the watch.
----@type EntityHandle
-base.levelIndicatorEnt = nil
 
 ---Amount of resin that was found in the map since last check.
 ---@type number
@@ -97,9 +84,7 @@ local CLASS_LIST_AMMO_ITEMS = ArrayAppend(CLASS_LIST_AMMO, CLASS_LIST_ITEMS)
 
 function base:Precache(context)
     PrecacheModel("models/resin_watch/resin_watch_compass.vmdl", context)
-    PrecacheModel("models/resin_watch/resin_watch_base.vmdl", context)
-    PrecacheModel("models/resin_watch/resin_watch_level_indicator.vmdl", context)
-    PrecacheModel("models/hands/counter_panels.vmdl", context)
+    PrecacheModel("models/resin_watch/resin_watch_lhand.vmdl", context)
     PrecacheResource("sound", "ResinWatch.ResinTrackedBeep", context)
 end
 
@@ -107,20 +92,6 @@ end
 ---Called automatically on spawn
 ---@param spawnkeys CScriptKeyValues
 function base:OnSpawn(spawnkeys)
-    -- Counter
-    local panel = SpawnEntityFromTableSynchronous("prop_dynamic", {
-        targetname = self:GetName().."_panel",
-        model = "models/hands/counter_panels.vmdl",
-        disableshadows = "1",
-        bodygroups = "{\n\tcounter = 1\n}",
-        solid = "0",
-    })
-    panel:SetAbsScale(0.867)
-    panel:SetParent(self, "")
-    panel:SetLocalOrigin(Vector(-0.00900647, 1.00959, -0.160784))
-    panel:SetLocalAngles(0, 359.293, -37.9338)
-    panel:SetAbsOrigin(panel:GetAbsOrigin() + panel:GetUpVector() * 0.03)
-
     -- Compass
     local compass = SpawnEntityFromTableSynchronous("prop_dynamic", {
         targetname = self:GetName().."_compass",
@@ -131,19 +102,7 @@ function base:OnSpawn(spawnkeys)
     compass:SetParent(self, "")
     compass:ResetLocal()
 
-    -- Level indicator
-    local level = SpawnEntityFromTableSynchronous("prop_dynamic", {
-        targetname = self:GetName().."_level_indicator",
-        model = "models/resin_watch/resin_watch_level_indicator.vmdl",
-        origin = self:GetAbsOrigin(),
-        disableshadows = "1",
-    })
-    level:SetParent(self, "")
-    level:ResetLocal()
-
-    self.panelEnt = panel
     self.compassEnt = compass
-    self.levelIndicatorEnt = level
 end
 
 ---Called automatically on activate.
@@ -188,8 +147,8 @@ function base:AttachToHand(hand, inverted)
         offset = offset or Vector(0.6, 1.2, 0)
         angles = angles or QAngle(-7.07305, 0, -90)
     else
-        offset = offset or Vector(0.6, 1.2, 0)
-        angles = angles or QAngle(-7.07305-180, 0, -90)
+        offset = offset or Vector(-4, 1.85, -0.25)
+        angles = angles or QAngle(260, 0, 270)
     end
 
     if inverted or (inverted == nil and EasyConvars:GetBool("resin_watch_inverted")) then
@@ -256,8 +215,8 @@ function base:UpdateCounterPanelNumber(amount)
         ind0,ind9 = AMMO_COUNTER_INDEX_0, AMMO_COUNTER_INDEX_9
     end
 
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterDigitTens="..RemapVal(tens, 0, 9, ind0, ind9))
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterDigitOnes="..RemapVal(ones, 0, 9, ind0, ind9))
+    self:EntFire("SetRenderAttribute", "$CounterDigitTens="..RemapVal(tens, 0, 9, ind0, ind9))
+    self:EntFire("SetRenderAttribute", "$CounterDigitOnes="..RemapVal(ones, 0, 9, ind0, ind9))
 end
 
 ---Set the tracking mode.
@@ -300,8 +259,9 @@ end
 function base:SetBlankVisuals()
     local isResin = self.trackingMode == "resin"
     self.compassEnt:SetSkin(isResin and SKIN_COMPASS_RESIN_BLANK or SKIN_COMPASS_AMMO_BLANK)
-    self.levelIndicatorEnt:SetSkin(isResin and SKIN_LEVEL_RESIN_BLANK or SKIN_LEVEL_AMMO_BLANK)
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterIcon=" .. (isResin and RESIN_COUNTER_INDEX_BLANK or AMMO_COUNTER_INDEX_BLANK))
+    self:SetBodygroup(BODY_WATCH_MODE, isResin and 1 or 0)
+    self:EntFire("SetRenderAttribute", "$LevelLED=0")
+    self:EntFire("SetRenderAttribute", "$CounterIcon=" .. (isResin and RESIN_COUNTER_INDEX_BLANK or AMMO_COUNTER_INDEX_BLANK))
 end
 
 ---Get the list of classnames related to the current tracking mode.
@@ -468,7 +428,7 @@ function base:Think()
 
         if self.__lastLevelType ~= levelType then
             self.__lastLevelType = levelType
-            self.levelIndicatorEnt:SetSkin(levelType)
+            self:EntFire("SetRenderAttribute", "$LevelLED=" .. levelType)
         end
 
     else
