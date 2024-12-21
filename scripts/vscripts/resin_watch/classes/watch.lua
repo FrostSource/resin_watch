@@ -19,6 +19,13 @@ local SKIN_COMPASS_RESIN_BLANK = 1
 local SKIN_COMPASS_AMMO = 2
 local SKIN_COMPASS_AMMO_BLANK = 3
 
+-- First skin has to be a level one, so both get unique materials.
+local SKIN_BODY_LED_LEVEL_UP = 0
+local SKIN_BODY_LED_LEVEL_DOWN = 1
+local SKIN_BODY_LED_FOUND_AMMO = 2
+local SKIN_BODY_LED_FOUND_RESIN = 3
+local SKIN_BODY_LED_OFF = 4
+
 local BODY_WATCH_MODE = 1
 
 local CLASS_LIST_RESIN = {
@@ -47,6 +54,10 @@ local CLASS_LIST_ITEMS = {
 ---The length of the model for calculating wrist attachment
 local MODEL_LENGTH = 1.5
 
+--- Time between blinks, and number of cycles when items are found.
+local BLINK_DELAY = 0.25
+local BLINK_COUNT = 4
+
 require "alyxlib.controls.input"
 Input.AutoStart = true
 
@@ -70,9 +81,12 @@ base.__lastResinCount = -1
 ---@type EntityHandle
 base.__lastResinTracked = nil
 
----The type of indicator the last level indicator used.
----@type 0|1|2 # 0 = Same floor, 1 = above floor, 2 = below floor
-base.__lastLevelType = 0
+---The skin for the last LED used.
+---@type number
+base.__idleLED = SKIN_BODY_LED_OFF
+
+---If >0, the number of blinks still to occur.
+base.__blinkCount = 0
 
 ---List of classnames that are currently tracked.
 ---@type string[]
@@ -260,7 +274,7 @@ function base:SetBlankVisuals()
     local isResin = self.trackingMode == "resin"
     self.compassEnt:SetSkin(isResin and SKIN_COMPASS_RESIN_BLANK or SKIN_COMPASS_AMMO_BLANK)
     self:SetBodygroup(BODY_WATCH_MODE, isResin and 1 or 0)
-    self:EntFire("SetRenderAttribute", "$LevelLED=0")
+    self:SetSkin(SKIN_BODY_LED_OFF)
     self:EntFire("SetRenderAttribute", "$CounterIcon=" .. (isResin and RESIN_COUNTER_INDEX_BLANK or AMMO_COUNTER_INDEX_BLANK))
 end
 
@@ -368,6 +382,21 @@ local function getNearestEntity(origin, maxRadius)
     return bestEnt
 end
 
+function base:BlinkThink()
+    self.__blinkCount = self.__blinkCount - 1
+    if self.__blinkCount % 2 == 0 then
+        self:SetSkin(self.trackingMode == "resin" and SKIN_BODY_LED_FOUND_RESIN or SKIN_BODY_LED_FOUND_AMMO)
+    else
+        self:SetSkin(SKIN_BODY_LED_OFF)
+    end
+    if self.__blinkCount > 0 then
+        return BLINK_DELAY
+    else
+        self:SetSkin(self.__idleLED)
+        self:SetContextThink("blinkThink", nil, 0)
+    end
+end
+
 ---Main entity think function. Think state is saved between loads
 function base:Think()
     local selfOrigin = self:GetAbsOrigin()
@@ -394,6 +423,11 @@ function base:Think()
                 if attachedHand then
                     RESIN_NOTIFY_HAPTIC_SEQ:Fire(attachedHand)
                 end
+                if self.__blinkCount == 0 then
+                    self:SetContextThink("blinkThink", function() return self:BlinkThink() end, BLINK_DELAY);
+                end -- Else, already thinking.
+                self.__blinkCount = BLINK_COUNT
+                self:SetSkin(self.trackingMode == "resin" and SKIN_BODY_LED_FOUND_RESIN or SKIN_BODY_LED_FOUND_AMMO)
             end
             local skin = SKIN_COMPASS_RESIN
             if self.trackingMode == "ammo" then skin = SKIN_COMPASS_AMMO end
@@ -417,24 +451,19 @@ function base:Think()
         local levelType = 0
 
         if zDiff > EasyConvars:GetFloat("resin_watch_level_up") then
-            levelType = 1
+            self.__idleLED = SKIN_BODY_LED_LEVEL_UP
         elseif zDiff < EasyConvars:GetFloat("resin_watch_level_down") then
-            levelType = 2
+            self.__idleLED = SKIN_BODY_LED_LEVEL_DOWN
+        else
+            self.__idleLED = SKIN_BODY_LED_OFF
         end
-        -- Adjust for ammo color
-        if self.trackingMode == "ammo" then
-            levelType = levelType + 3
-        end
-
-        if self.__lastLevelType ~= levelType then
-            self.__lastLevelType = levelType
-            self:EntFire("SetRenderAttribute", "$LevelLED=" .. levelType)
+        if self.__blinkCount == 0 then
+            self:SetSkin(self.__idleLED)
         end
 
     else
         if self.__lastResinTracked ~= nil then
             self.__lastResinTracked = nil
-            self.__lastLevelType = 0
             self:SetBlankVisuals()
         end
     end

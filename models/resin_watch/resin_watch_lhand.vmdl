@@ -40,20 +40,96 @@
 				children = 
 				[
 					{
+						_class = "MaterialGroup"
+						name = "level_down"
+						remaps = 
+						[
+							{
+								from = "models/hands/materials/grav_glove.vmat"
+								to = "models/hands/materials/grav_glove.vmat"
+							},
+							{
+								from = "models/resin_watch/materials/resin_watch_led_green.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_red.vmat"
+							},
+							{
+								from = "models/resin_watch/materials/resin_watch_led_red.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_green.vmat"
+							},
+						]
+					},
+					{
 						_class = "DefaultMaterialGroup"
 						remaps = 
 						[
 							{
 								from = "models/hands/materials/resin_watch_level_led_down.vmat"
-								to = "models/resin_watch/materials/resin_watch_level_led_down.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_red.vmat"
 							},
 							{
 								from = "models/hands/materials/resin_watch_level_led_up.vmat"
-								to = "models/resin_watch/materials/resin_watch_level_led_up.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_green.vmat"
 							},
 						]
 						use_global_default = false
 						global_default_material = ""
+					},
+					{
+						_class = "MaterialGroup"
+						name = "found_ammo"
+						remaps = 
+						[
+							{
+								from = "models/hands/materials/g_glove_display_counter_pane_2.vmat"
+								to = "models/hands/materials/g_glove_display_counter_pane_2.vmat"
+							},
+							{
+								from = "models/hands/materials/g_glove_display_counter_pane_3.vmat"
+								to = "models/hands/materials/g_glove_display_counter_pane_3.vmat"
+							},
+							{
+								from = "models/resin_watch/materials/resin_watch_led_green.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_ammo.vmat"
+							},
+							{
+								from = "models/resin_watch/materials/resin_watch_led_red.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_ammo.vmat"
+							},
+						]
+					},
+					{
+						_class = "MaterialGroup"
+						name = "found_resin"
+						remaps = 
+						[
+							{
+								from = "models/hands/materials/grav_glove_glass.vmat"
+								to = "models/hands/materials/grav_glove_glass.vmat"
+							},
+							{
+								from = "models/resin_watch/materials/resin_watch_led_green.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_resin.vmat"
+							},
+							{
+								from = "models/resin_watch/materials/resin_watch_led_red.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_resin.vmat"
+							},
+						]
+					},
+					{
+						_class = "MaterialGroup"
+						name = "off"
+						remaps = 
+						[
+							{
+								from = "models/resin_watch/materials/resin_watch_led_green.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_off.vmat"
+							},
+							{
+								from = "models/resin_watch/materials/resin_watch_led_red.vmat"
+								to = "models/resin_watch/materials/resin_watch_led_off.vmat"
+							},
+						]
 					},
 				]
 			},
