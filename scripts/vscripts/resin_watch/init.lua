@@ -123,6 +123,12 @@ function GetResinWatch()
     return ResinWatch
 end
 
+ListenToPlayerEvent("primary_hand_changed", function() 
+    if GetResinWatch() then
+        ResinWatch:AttachToHand()
+    end
+end)
+
 
 ---@param params PLAYER_EVENT_VR_PLAYER_READY
 ListenToPlayerEvent("vr_player_ready", function (params)
