@@ -153,8 +153,8 @@
 					},
 					{
 						_class = "RenderMeshFile"
-						name = "lhand"
-						filename = "models/resin_watch/dmx/mesh/resin_watch_lhand.dmx"
+						name = "rhand"
+						filename = "models/resin_watch/dmx/mesh/resin_watch_rhand.dmx"
 						import_scale = 1.0
 						import_filter = 
 						{
@@ -165,7 +165,7 @@
 					{
 						_class = "RenderMeshFile"
 						name = "switch_down"
-						filename = "models/resin_watch/dmx/mesh/resin_watch_lhand_switch_down.dmx"
+						filename = "models/resin_watch/dmx/mesh/resin_watch_rhand_switch_down.dmx"
 						import_scale = 1.0
 						import_filter = 
 						{
@@ -176,7 +176,7 @@
 					{
 						_class = "RenderMeshFile"
 						name = "switch_up"
-						filename = "models/resin_watch/dmx/mesh/resin_watch_lhand_switch_up.dmx"
+						filename = "models/resin_watch/dmx/mesh/resin_watch_rhand_switch_up.dmx"
 						import_scale = 1.0
 						import_filter = 
 						{

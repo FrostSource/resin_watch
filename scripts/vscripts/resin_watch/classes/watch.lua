@@ -52,7 +52,7 @@ local CLASS_LIST_ITEMS = {
 }
 
 ---The length of the model for calculating wrist attachment
-local MODEL_LENGTH = 1.5
+local MODEL_LENGTH = 2.5
 
 --- Time between blinks, and number of cycles when items are found.
 local BLINK_DELAY = 0.25
@@ -99,6 +99,7 @@ local CLASS_LIST_AMMO_ITEMS = ArrayAppend(CLASS_LIST_AMMO, CLASS_LIST_ITEMS)
 function base:Precache(context)
     PrecacheModel("models/resin_watch/resin_watch_compass.vmdl", context)
     PrecacheModel("models/resin_watch/resin_watch_lhand.vmdl", context)
+    PrecacheModel("models/resin_watch/resin_watch_rhand.vmdl", context)
     PrecacheResource("sound", "ResinWatch.ResinTrackedBeep", context)
 end
 
@@ -157,12 +158,15 @@ function base:AttachToHand(hand, inverted)
 
     hand = handType == "primary" and Player.PrimaryHand or Player.SecondaryHand
 
+    -- X axis is set by model length.
     if hand == Player.LeftHand then
-        offset = offset or Vector(0.6, 1.2, 0)
-        angles = angles or QAngle(-7.07305, 0, -90)
+        offset = offset or Vector(-4.75, 1.4, 0)
+        angles = angles or QAngle(270, 180, 85)
+        self:SetModel("models/resin_watch/resin_watch_lhand.vmdl")
     else
-        offset = offset or Vector(-4, 1.85, -0.25)
-        angles = angles or QAngle(260, 0, 270)
+        offset = offset or Vector(-4.75, 1.4, 0)
+        angles = angles or QAngle(90, 180, 95)
+        self:SetModel("models/resin_watch/resin_watch_rhand.vmdl")
     end
 
     if inverted or (inverted == nil and EasyConvars:GetBool("resin_watch_inverted")) then
@@ -176,6 +180,7 @@ function base:AttachToHand(hand, inverted)
         WristAttachments:Add(self, handType, MODEL_LENGTH, 0, offset, angles)
     end
 
+    self:SetBlankVisuals()
     self:SetOwner(Player)
 
     self:UpdateControllerInputs()
