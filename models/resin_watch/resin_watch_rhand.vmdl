@@ -148,6 +148,7 @@
 							exception_list = 
 							[
 								"watch_band",
+								"watch_band_full",
 							]
 						}
 					},
