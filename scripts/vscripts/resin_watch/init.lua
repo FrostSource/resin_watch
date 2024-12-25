@@ -140,7 +140,7 @@ ListenToPlayerEvent("vr_player_ready", function (params)
 
     SpawnEntityFromTableAsynchronous("prop_dynamic", {
         targetname = "resin_watch_attached_to_hand",
-        model = "models/resin_watch/resin_watch_lhand.vmdl",
+        model = "models/resin_watch/resin_watch.vmdl",
         vscripts = "resin_watch/classes/watch",
         disableshadows = "1",
     }, function (spawnedEnt)
@@ -159,7 +159,7 @@ ListenToPlayerEvent("novr_player", function (params)
         if enabled then
             SpawnEntityFromTableAsynchronous("prop_dynamic", {
                 targetname = "resin_watch_novr",
-                model = "models/resin_watch/resin_watch_lhand.vmdl",
+                model = "models/resin_watch/resin_watch.vmdl",
                 vscripts = "resin_watch/classes/watch",
                 disableshadows = "1",
             }, function (spawnedEnt)

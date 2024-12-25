@@ -11,23 +11,78 @@
 				[
 					{
 						_class = "BodyGroup"
+						name = "common"
+						children = 
+						[
+							{
+								_class = "BodyGroupChoice"
+								meshes = 
+								[
+									"common",
+								]
+							},
+						]
+						hidden_in_tools = true
+					},
+					{
+						_class = "BodyGroup"
+						name = "side"
+						children = 
+						[
+							{
+								_class = "BodyGroupChoice"
+								name = "left"
+								meshes = 
+								[
+									"lhand",
+								]
+							},
+							{
+								_class = "BodyGroupChoice"
+								name = "right"
+								meshes = 
+								[
+									"rhand",
+								]
+							},
+						]
+						hidden_in_tools = false
+					},
+					{
+						_class = "BodyGroup"
 						name = "switch"
 						children = 
 						[
 							{
 								_class = "BodyGroupChoice"
-								name = "choice_up"
+								name = "choice_lhand_up"
 								meshes = 
 								[
-									"switch_up",
+									"lhand_switch_up",
 								]
 							},
 							{
 								_class = "BodyGroupChoice"
-								name = "choice_down"
+								name = "choice_lhand_down"
 								meshes = 
 								[
-									"switch_down",
+									"lhand_switch_down",
+								]
+							},
+							{
+								_class = "BodyGroupChoice"
+								name = "choice_rhand_up"
+								meshes = 
+								[
+									"rhand_switch_up",
+								]
+							},
+							{
+								_class = "BodyGroupChoice"
+								name = "choice_rhand_down"
+								meshes = 
+								[
+									"rhand_switch_down",
 								]
 							},
 						]
@@ -165,7 +220,7 @@
 					},
 					{
 						_class = "RenderMeshFile"
-						name = "switch_down"
+						name = "lhand_switch_down"
 						filename = "models/resin_watch/dmx/mesh/resin_watch_lhand_switch_down.dmx"
 						import_scale = 1.0
 						import_filter = 
@@ -176,8 +231,41 @@
 					},
 					{
 						_class = "RenderMeshFile"
-						name = "switch_up"
+						name = "lhand_switch_up"
 						filename = "models/resin_watch/dmx/mesh/resin_watch_lhand_switch_up.dmx"
+						import_scale = 1.0
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "RenderMeshFile"
+						name = "rhand"
+						filename = "models/resin_watch/dmx/mesh/resin_watch_rhand.dmx"
+						import_scale = 1.0
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "RenderMeshFile"
+						name = "rhand_switch_down"
+						filename = "models/resin_watch/dmx/mesh/resin_watch_rhand_switch_down.dmx"
+						import_scale = 1.0
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+					{
+						_class = "RenderMeshFile"
+						name = "rhand_switch_up"
+						filename = "models/resin_watch/dmx/mesh/resin_watch_rhand_switch_up.dmx"
 						import_scale = 1.0
 						import_filter = 
 						{

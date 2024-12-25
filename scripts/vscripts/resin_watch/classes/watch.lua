@@ -26,7 +26,16 @@ local SKIN_BODY_LED_FOUND_AMMO = 2
 local SKIN_BODY_LED_FOUND_RESIN = 3
 local SKIN_BODY_LED_OFF = 4
 
-local BODY_WATCH_MODE = 1
+-- This bodygroup flips the static elements.
+local BODY_WATCH_SIDE = 1
+local BODY_VAL_SIDE_LHAND = 0
+local BODY_VAL_SIDE_RHAND = 1
+
+-- The switch has values lhand-up, lhand-down, rhand-up, rhand-down.
+local BODY_WATCH_MODE = 2
+local BODY_VAL_SWITCH_UP = 0
+local BODY_VAL_SWITCH_DOWN = 1
+local BODY_VAL_SWITCH_RHAND = 2
 
 local CLASS_LIST_RESIN = {
     "item_hlvr_crafting_currency_small",
@@ -51,6 +60,17 @@ local CLASS_LIST_ITEMS = {
     "item_item_crate",
 }
 
+-- For specific classes, a function to determine if the item is valid.
+--- @type table<string, (fun(entity: CBaseAnimating): boolean)>
+local CLASS_FILTERS = {
+    item_healthvial = function(entity) 
+        local capsule = entity:GetFirstChildWithClassname("prop_item_healthvial_capsule")
+        -- If no capsule can't determine, track anyway.
+        -- If the mask is 2, the needle is gone and it's used up.
+        return capsule == nil or tostring(capsule:GetMaterialGroupMask()) ~= "2"
+    end
+};
+
 ---The length of the model for calculating wrist attachment
 local MODEL_LENGTH = 2.5
 
@@ -68,6 +88,10 @@ local base = entity("ResinWatch")
 ---Rotating indicator parented to the watch.
 ---@type EntityHandle
 base.compassEnt = nil
+
+---Whether the watch is left or right handed.
+---@type boolean
+base.rightHanded = false
 
 ---The type of entity to track.
 ---@type "resin"|"ammo"
@@ -98,8 +122,7 @@ local CLASS_LIST_AMMO_ITEMS = ArrayAppend(CLASS_LIST_AMMO, CLASS_LIST_ITEMS)
 
 function base:Precache(context)
     PrecacheModel("models/resin_watch/resin_watch_compass.vmdl", context)
-    PrecacheModel("models/resin_watch/resin_watch_lhand.vmdl", context)
-    PrecacheModel("models/resin_watch/resin_watch_rhand.vmdl", context)
+    PrecacheModel("models/resin_watch/resin_watch.vmdl", context)
     PrecacheResource("sound", "ResinWatch.ResinTrackedBeep", context)
 end
 
@@ -158,15 +181,15 @@ function base:AttachToHand(hand, inverted)
 
     hand = handType == "primary" and Player.PrimaryHand or Player.SecondaryHand
 
-    -- X axis is set by model length.
+    base.rightHanded = hand == Player.RightHand
+    self:SetBodygroup(BODY_WATCH_SIDE, base.rightHanded and BODY_VAL_SIDE_RHAND or BODY_VAL_SIDE_LHAND)
+
+    -- X axis is ignored, set by model length.
+    offset = offset or Vector(0, 1.4, 0)
     if hand == Player.LeftHand then
-        offset = offset or Vector(-4.75, 1.4, 0)
         angles = angles or QAngle(270, 180, 85)
-        self:SetModel("models/resin_watch/resin_watch_lhand.vmdl")
     else
-        offset = offset or Vector(-4.75, 1.4, 0)
         angles = angles or QAngle(90, 180, 95)
-        self:SetModel("models/resin_watch/resin_watch_rhand.vmdl")
     end
 
     if inverted or (inverted == nil and EasyConvars:GetBool("resin_watch_inverted")) then
@@ -278,9 +301,14 @@ end
 function base:SetBlankVisuals()
     local isResin = self.trackingMode == "resin"
     self.compassEnt:SetSkin(isResin and SKIN_COMPASS_RESIN_BLANK or SKIN_COMPASS_AMMO_BLANK)
-    self:SetBodygroup(BODY_WATCH_MODE, isResin and 1 or 0)
+    local mode = isResin and BODY_VAL_SWITCH_DOWN or BODY_VAL_SWITCH_UP
+    if self.rightHanded then
+        mode = mode + BODY_VAL_SWITCH_RHAND
+    end
+    self:SetBodygroup(BODY_WATCH_MODE, mode)
     self:SetSkin(SKIN_BODY_LED_OFF)
     self:EntFire("SetRenderAttribute", "$CounterIcon=" .. (isResin and RESIN_COUNTER_INDEX_BLANK or AMMO_COUNTER_INDEX_BLANK))
+    base.__lastResinTracked = nil
 end
 
 ---Get the list of classnames related to the current tracking mode.
@@ -468,7 +496,6 @@ function base:Think()
 
     else
         if self.__lastResinTracked ~= nil then
-            self.__lastResinTracked = nil
             self:SetBlankVisuals()
         end
     end
