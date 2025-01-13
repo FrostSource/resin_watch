@@ -6,3 +6,8 @@ __pycache__
 /test_release/
 __test*
 *.bak
+*.blend1
+
+
+# Ignore for filesize reasons, extract from Alyx.
+orig_textures/

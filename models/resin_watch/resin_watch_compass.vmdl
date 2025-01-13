@@ -12,7 +12,7 @@
 					{
 						_class = "RenderMeshFile"
 						filename = "models\\resin_watch\\dmx\\mesh\\resin_watch_compass.dmx"
-						import_scale = 1.0
+						import_scale = 1.4
 						import_filter = 
 						{
 							exclude_by_default = false

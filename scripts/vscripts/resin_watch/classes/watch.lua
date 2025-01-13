@@ -14,17 +14,28 @@ local AMMO_COUNTER_INDEX_0 = 16
 local AMMO_COUNTER_INDEX_9 = 25
 local AMMO_COUNTER_INDEX_BLANK = 27
 
-local SKIN_LEVEL_RESIN_BLANK = 0
-local SKIN_LEVEL_RESIN_UP = 1
-local SKIN_LEVEL_RESIN_DOWN = 2
-local SKIN_LEVEL_AMMO_BLANK = 3
-local SKIN_LEVEL_AMMO_UP = 4
-local SKIN_LEVEL_AMMO_DOWN = 5
-
 local SKIN_COMPASS_RESIN = 0
 local SKIN_COMPASS_RESIN_BLANK = 1
 local SKIN_COMPASS_AMMO = 2
 local SKIN_COMPASS_AMMO_BLANK = 3
+
+-- First skin has to be a level one, so both get unique materials.
+local SKIN_BODY_LED_LEVEL_UP = 0
+local SKIN_BODY_LED_LEVEL_DOWN = 1
+local SKIN_BODY_LED_FOUND_AMMO = 2
+local SKIN_BODY_LED_FOUND_RESIN = 3
+local SKIN_BODY_LED_OFF = 4
+
+-- This bodygroup flips the static elements.
+local BODY_WATCH_SIDE = 1
+local BODY_VAL_SIDE_LHAND = 0
+local BODY_VAL_SIDE_RHAND = 1
+
+-- The switch has values lhand-up, lhand-down, rhand-up, rhand-down.
+local BODY_WATCH_MODE = 2
+local BODY_VAL_SWITCH_UP = 0
+local BODY_VAL_SWITCH_DOWN = 1
+local BODY_VAL_SWITCH_RHAND = 2
 
 local CLASS_LIST_RESIN = {
     "item_hlvr_crafting_currency_small",
@@ -49,8 +60,23 @@ local CLASS_LIST_ITEMS = {
     "item_item_crate",
 }
 
+-- For specific classes, a function to determine if the item is valid.
+--- @type table<string, (fun(entity: CBaseAnimating): boolean)>
+local CLASS_FILTERS = {
+    item_healthvial = function(entity) 
+        local capsule = entity:GetFirstChildWithClassname("prop_item_healthvial_capsule")
+        -- If no capsule can't determine, track anyway.
+        -- If the mask is 2, the needle is gone and it's used up.
+        return capsule == nil or tostring(capsule:GetMaterialGroupMask()) ~= "2"
+    end
+};
+
 ---The length of the model for calculating wrist attachment
-local MODEL_LENGTH = 1.5
+local MODEL_LENGTH = 2.5
+
+--- Time between blinks, and number of cycles when items are found.
+local BLINK_DELAY = 0.25
+local BLINK_COUNT = 4
 
 require "alyxlib.controls.input"
 Input.AutoStart = true
@@ -63,17 +89,13 @@ local base = entity("ResinWatch")
 ---@type EntityHandle
 base.compassEnt = nil
 
----Text panel parented to the watch.
----@type EntityHandle
-base.panelEnt = nil
+---Whether the watch is left or right handed.
+---@type boolean
+base.rightHanded = false
 
 ---The type of entity to track.
 ---@type "resin"|"ammo"
 base.trackingMode = "resin"
-
----Level indicator parented to the watch.
----@type EntityHandle
-base.levelIndicatorEnt = nil
 
 ---Amount of resin that was found in the map since last check.
 ---@type number
@@ -83,9 +105,12 @@ base.__lastResinCount = -1
 ---@type EntityHandle
 base.__lastResinTracked = nil
 
----The type of indicator the last level indicator used.
----@type 0|1|2 # 0 = Same floor, 1 = above floor, 2 = below floor
-base.__lastLevelType = 0
+---The skin for the last LED used.
+---@type number
+base.__idleLED = SKIN_BODY_LED_OFF
+
+---If >0, the number of blinks still to occur.
+base.__blinkCount = 0
 
 ---List of classnames that are currently tracked.
 ---@type string[]
@@ -97,9 +122,7 @@ local CLASS_LIST_AMMO_ITEMS = ArrayAppend(CLASS_LIST_AMMO, CLASS_LIST_ITEMS)
 
 function base:Precache(context)
     PrecacheModel("models/resin_watch/resin_watch_compass.vmdl", context)
-    PrecacheModel("models/resin_watch/resin_watch_base.vmdl", context)
-    PrecacheModel("models/resin_watch/resin_watch_level_indicator.vmdl", context)
-    PrecacheModel("models/hands/counter_panels.vmdl", context)
+    PrecacheModel("models/resin_watch/resin_watch.vmdl", context)
     PrecacheResource("sound", "ResinWatch.ResinTrackedBeep", context)
 end
 
@@ -107,20 +130,6 @@ end
 ---Called automatically on spawn
 ---@param spawnkeys CScriptKeyValues
 function base:OnSpawn(spawnkeys)
-    -- Counter
-    local panel = SpawnEntityFromTableSynchronous("prop_dynamic", {
-        targetname = self:GetName().."_panel",
-        model = "models/hands/counter_panels.vmdl",
-        disableshadows = "1",
-        bodygroups = "{\n\tcounter = 1\n}",
-        solid = "0",
-    })
-    panel:SetAbsScale(0.867)
-    panel:SetParent(self, "")
-    panel:SetLocalOrigin(Vector(-0.00900647, 1.00959, -0.160784))
-    panel:SetLocalAngles(0, 359.293, -37.9338)
-    panel:SetAbsOrigin(panel:GetAbsOrigin() + panel:GetUpVector() * 0.03)
-
     -- Compass
     local compass = SpawnEntityFromTableSynchronous("prop_dynamic", {
         targetname = self:GetName().."_compass",
@@ -131,19 +140,7 @@ function base:OnSpawn(spawnkeys)
     compass:SetParent(self, "")
     compass:ResetLocal()
 
-    -- Level indicator
-    local level = SpawnEntityFromTableSynchronous("prop_dynamic", {
-        targetname = self:GetName().."_level_indicator",
-        model = "models/resin_watch/resin_watch_level_indicator.vmdl",
-        origin = self:GetAbsOrigin(),
-        disableshadows = "1",
-    })
-    level:SetParent(self, "")
-    level:ResetLocal()
-
-    self.panelEnt = panel
     self.compassEnt = compass
-    self.levelIndicatorEnt = level
 end
 
 ---Called automatically on activate.
@@ -184,12 +181,15 @@ function base:AttachToHand(hand, inverted)
 
     hand = handType == "primary" and Player.PrimaryHand or Player.SecondaryHand
 
+    base.rightHanded = hand == Player.RightHand
+    self:SetBodygroup(BODY_WATCH_SIDE, base.rightHanded and BODY_VAL_SIDE_RHAND or BODY_VAL_SIDE_LHAND)
+
+    -- X axis is ignored, set by model length.
+    offset = offset or Vector(0, 1.4, 0)
     if hand == Player.LeftHand then
-        offset = offset or Vector(0.6, 1.2, 0)
-        angles = angles or QAngle(-7.07305, 0, -90)
+        angles = angles or QAngle(270, 180, 85)
     else
-        offset = offset or Vector(0.6, 1.2, 0)
-        angles = angles or QAngle(-7.07305-180, 0, -90)
+        angles = angles or QAngle(90, 180, 95)
     end
 
     if inverted or (inverted == nil and EasyConvars:GetBool("resin_watch_inverted")) then
@@ -203,6 +203,7 @@ function base:AttachToHand(hand, inverted)
         WristAttachments:Add(self, handType, MODEL_LENGTH, 0, offset, angles)
     end
 
+    self:SetBlankVisuals()
     self:SetOwner(Player)
 
     self:UpdateControllerInputs()
@@ -256,8 +257,8 @@ function base:UpdateCounterPanelNumber(amount)
         ind0,ind9 = AMMO_COUNTER_INDEX_0, AMMO_COUNTER_INDEX_9
     end
 
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterDigitTens="..RemapVal(tens, 0, 9, ind0, ind9))
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterDigitOnes="..RemapVal(ones, 0, 9, ind0, ind9))
+    self:EntFire("SetRenderAttribute", "$CounterDigitTens="..RemapVal(tens, 0, 9, ind0, ind9))
+    self:EntFire("SetRenderAttribute", "$CounterDigitOnes="..RemapVal(ones, 0, 9, ind0, ind9))
 end
 
 ---Set the tracking mode.
@@ -300,8 +301,14 @@ end
 function base:SetBlankVisuals()
     local isResin = self.trackingMode == "resin"
     self.compassEnt:SetSkin(isResin and SKIN_COMPASS_RESIN_BLANK or SKIN_COMPASS_AMMO_BLANK)
-    self.levelIndicatorEnt:SetSkin(isResin and SKIN_LEVEL_RESIN_BLANK or SKIN_LEVEL_AMMO_BLANK)
-    self.panelEnt:EntFire("SetRenderAttribute", "$CounterIcon=" .. (isResin and RESIN_COUNTER_INDEX_BLANK or AMMO_COUNTER_INDEX_BLANK))
+    local mode = isResin and BODY_VAL_SWITCH_DOWN or BODY_VAL_SWITCH_UP
+    if self.rightHanded then
+        mode = mode + BODY_VAL_SWITCH_RHAND
+    end
+    self:SetBodygroup(BODY_WATCH_MODE, mode)
+    self:SetSkin(SKIN_BODY_LED_OFF)
+    self:EntFire("SetRenderAttribute", "$CounterIcon=" .. (isResin and RESIN_COUNTER_INDEX_BLANK or AMMO_COUNTER_INDEX_BLANK))
+    base.__lastResinTracked = nil
 end
 
 ---Get the list of classnames related to the current tracking mode.
@@ -408,6 +415,21 @@ local function getNearestEntity(origin, maxRadius)
     return bestEnt
 end
 
+function base:BlinkThink()
+    self.__blinkCount = self.__blinkCount - 1
+    if self.__blinkCount % 2 == 0 then
+        self:SetSkin(self.trackingMode == "resin" and SKIN_BODY_LED_FOUND_RESIN or SKIN_BODY_LED_FOUND_AMMO)
+    else
+        self:SetSkin(SKIN_BODY_LED_OFF)
+    end
+    if self.__blinkCount > 0 then
+        return BLINK_DELAY
+    else
+        self:SetSkin(self.__idleLED)
+        self:SetContextThink("blinkThink", nil, 0)
+    end
+end
+
 ---Main entity think function. Think state is saved between loads
 function base:Think()
     local selfOrigin = self:GetAbsOrigin()
@@ -434,6 +456,11 @@ function base:Think()
                 if attachedHand then
                     RESIN_NOTIFY_HAPTIC_SEQ:Fire(attachedHand)
                 end
+                if self.__blinkCount == 0 then
+                    self:SetContextThink("blinkThink", function() return self:BlinkThink() end, BLINK_DELAY);
+                end -- Else, already thinking.
+                self.__blinkCount = BLINK_COUNT
+                self:SetSkin(self.trackingMode == "resin" and SKIN_BODY_LED_FOUND_RESIN or SKIN_BODY_LED_FOUND_AMMO)
             end
             local skin = SKIN_COMPASS_RESIN
             if self.trackingMode == "ammo" then skin = SKIN_COMPASS_AMMO end
@@ -457,24 +484,18 @@ function base:Think()
         local levelType = 0
 
         if zDiff > EasyConvars:GetFloat("resin_watch_level_up") then
-            levelType = 1
+            self.__idleLED = SKIN_BODY_LED_LEVEL_UP
         elseif zDiff < EasyConvars:GetFloat("resin_watch_level_down") then
-            levelType = 2
+            self.__idleLED = SKIN_BODY_LED_LEVEL_DOWN
+        else
+            self.__idleLED = SKIN_BODY_LED_OFF
         end
-        -- Adjust for ammo color
-        if self.trackingMode == "ammo" then
-            levelType = levelType + 3
-        end
-
-        if self.__lastLevelType ~= levelType then
-            self.__lastLevelType = levelType
-            self.levelIndicatorEnt:SetSkin(levelType)
+        if self.__blinkCount == 0 then
+            self:SetSkin(self.__idleLED)
         end
 
     else
         if self.__lastResinTracked ~= nil then
-            self.__lastResinTracked = nil
-            self.__lastLevelType = 0
             self:SetBlankVisuals()
         end
     end

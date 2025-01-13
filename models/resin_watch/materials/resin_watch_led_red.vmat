@@ -4,9 +4,12 @@ Layer0
 {
 	shader "vr_complex.vfx"
 
+	//---- Animation ----
+	F_TEXTURE_ANIMATION 1
+	F_TEXTURE_ANIMATION_MODE 2 // Scripted
+
 	//---- PBR ----
 	F_SELF_ILLUM 1
-	F_SPECULAR 1
 
 	//---- Ambient Occlusion ----
 	g_flAmbientOcclusionDirectDiffuse "0.000"
@@ -16,7 +19,7 @@ Layer0
 	//---- Color ----
 	g_flModelTintAmount "1.000"
 	g_vColorTint "[1.000000 1.000000 1.000000 0.000000]"
-	TextureColor "models/resin_watch/materials/resin_watch_level_indicator_up_ammo_color.png"
+	TextureColor "models/resin_watch/materials/resin_watch_led.png"
 
 	//---- Fade ----
 	g_flFadeExponent "1.000"
@@ -32,23 +35,29 @@ Layer0
 	g_flMetalness "0.000"
 
 	//---- Normal ----
-	TextureNormal "materials/default/default_normal.tga"
+	TextureNormal "materials/dev/flat_normal.psd"
 
 	//---- Roughness ----
-	TextureRoughness "[0.847059 0.847059 0.847059 0.000000]"
+	TextureRoughness "[0.200000 0.200000 0.200000 0.000000]"
 
 	//---- Self Illum ----
 	g_flSelfIllumAlbedoFactor "1.000"
-	g_flSelfIllumBrightness "0.000"
+	g_flSelfIllumBrightness "3.000"
 	g_flSelfIllumScale "1.000"
 	g_vSelfIllumScrollSpeed "[0.000 0.000]"
 	g_vSelfIllumTint "[1.000000 1.000000 1.000000 0.000000]"
 	TextureSelfIllumMask "[1.000000 1.000000 1.000000 0.000000]"
+
+	//---- Texture Animation ----
+	g_flAnimationFrame "4.000"
+	g_flAnimationTimeOffset "0.000"
+	g_flAnimationTimePerFrame "0.000"
+	g_nNumAnimationCells "1"
+	g_vAnimationGrid "[4 2]"
 
 	//---- Texture Coordinates ----
 	g_nScaleTexCoordUByModelScaleAxis "0"
 	g_nScaleTexCoordVByModelScaleAxis "0"
 	g_vTexCoordOffset "[0.000 0.000]"
 	g_vTexCoordScale "[1.000 1.000]"
-	g_vTexCoordScrollSpeed "[0.000 0.000]"
 }
