@@ -203,9 +203,9 @@ function base:AttachToHand(hand, inverted)
         WristAttachments:Add(self, handType, MODEL_LENGTH, 0, offset, angles)
     end
 
-    self:SetBlankVisuals()
     self:SetOwner(Player)
 
+    self:ForceUpdateTracking()
     self:UpdateControllerInputs()
 end
 
