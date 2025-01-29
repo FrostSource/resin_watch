@@ -232,7 +232,6 @@ function base:UpdateControllerInputs()
 
     ---@TODO Is there a way to untrack the previous button only if no other mod is using it?
     local button = EasyConvars:GetInt("resin_watch_toggle_button")
-    Input:TrackButton(button)
 
     local hand = self:GetAttachedHand()
     Input:StopListeningCallbackContext(self._InputTrackingModeToggleCallback, self)
@@ -240,7 +239,7 @@ function base:UpdateControllerInputs()
 end
 
 ---Internal callback for tracking mode toggle button press.
----@param params INPUT_PRESS_CALLBACK
+---@param params InputPressCallback
 function base:_InputTrackingModeToggleCallback(params)
     self:ToggleTrackingMode()
 end

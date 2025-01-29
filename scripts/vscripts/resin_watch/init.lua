@@ -130,7 +130,7 @@ ListenToPlayerEvent("primary_hand_changed", function()
 end)
 
 
----@param params PLAYER_EVENT_VR_PLAYER_READY
+---@param params PlayerEventVRPlayerReady
 ListenToPlayerEvent("vr_player_ready", function (params)
     if Entities:FindByName(nil, watch_name) then
         return
