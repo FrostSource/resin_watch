@@ -4,7 +4,52 @@ if IsClient() then return end
 -- Load alyxlib before using it, in case this mod loads before the alyxlib mod.
 require("alyxlib.init")
 
-local version = "v2.0.0"
+local version = "v3.0.0"
+
+local alyxlibAddonIndex = RegisterAlyxLibAddon("Resin Watch (Item Tracker)", version, "3145397582", "resin_watch", "v1.3.0")
+
+ReigsterAlyxLibDiagnostic(alyxlibAddonIndex, function ()
+    if not Player.HMDAvatar then
+        return false, "Resin watch requires VR or +vr_enable_fake_vr to be enabled"
+    end
+
+    local convars = {
+        "resin_watch_primary_hand",
+        "resin_watch_allow_ammo_tracking",
+        "resin_watch_allow_item_tracking",
+        "resin_watch_radius",
+        "resin_watch_notify",
+        "resin_watch_level_up",
+        "resin_watch_level_down"
+    }
+
+    for _, convar in ipairs(convars) do
+        if EasyConvars:WasChangedByUser(convar) then
+            Msg(convar .. " = " .. EasyConvars:GetStr(convar) .. "\n")
+        end
+    end
+
+    local watch = GetResinWatch()
+    if not watch then
+        return false, "Resin watch does not exist in game, try using the 'resin_watch_reset_watch' command"
+    end
+
+    local hand = EasyConvars:GetBool("resin_watch_primary_hand") and Player.PrimaryHand or Player.SecondaryHand
+    if not hand then
+        return false, "The hand that the watch should be attached to does not exist"
+    end
+
+    local attachedHand = watch:GetAttachedHand()
+    if not attachedHand then
+        return false, "The watch is not attached to a hand"
+    end
+    Msg("Resin watch is attached to " .. Input:GetHandName(attachedHand) .. "hand\n")
+
+    local thinkTime = watch:GetLocalLastThinkTime()
+    Msg("Resin watch last think time: " .. Time() - thinkTime .. " seconds ago (" .. thinkTime .. ")\n")
+
+    return true, "No issues were detected, try using `resin_watch_reset_watch` to fix any issues"
+end)
 
 -- execute code or load mod libraries here
 require "resin_watch.classes.watch"
