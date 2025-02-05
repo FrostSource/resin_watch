@@ -158,6 +158,17 @@ function (newVal, oldVal)
 end)
 EasyConvars:SetPersistent("resin_watch_toggle_button", true)
 
+EasyConvars:RegisterCommand("resin_watch_reset_watch", function ()
+    local watch = GetResinWatch()
+    if watch then
+        devprint("Watch exists, resetting...")
+        watch:AttachToHand()
+    else
+        devprint("Watch does not exist, spawning...")
+        spawnResinWatch()
+    end
+end, "Resets the resin watch, or spawns a new one if it doesn't exist", 0)
+
 ---Global entity for Resin Watch attached to the player wrist.
 ---@type ResinWatch
 _G.ResinWatch = nil
