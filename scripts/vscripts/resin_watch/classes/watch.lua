@@ -429,8 +429,22 @@ function base:BlinkThink()
     end
 end
 
+-- Used for debugging purposes, i.e. `alyxlib_diagnose resin_watch`
+local lastThinkTime = 0
+
+---
+---Gets the last server time the resin watch think function was run.
+---This value is shared for all instances of the watch.
+---
+---@return integer
+function base:GetLocalLastThinkTime()
+    return lastThinkTime
+end
+
 ---Main entity think function. Think state is saved between loads
 function base:Think()
+    lastThinkTime = Time()
+
     local selfOrigin = self:GetAbsOrigin()
 
     if Time() - trackedEntitiesTime > TRACKED_ENTITIES_UPDATE_TIME then
