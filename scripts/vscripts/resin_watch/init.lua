@@ -69,6 +69,12 @@ local function spawnResinWatch()
     end, nil)
 end
 
+ListenToPlayerEvent("primary_hand_changed", function()
+    if GetResinWatch() then
+        ResinWatch:AttachToHand()
+    end
+end)
+
 EasyConvars:RegisterConvar("resin_watch_radius", "700", "Distance to track resin")
 EasyConvars:SetPersistent("resin_watch_radius", true)
 EasyConvars:RegisterConvar("resin_watch_notify", "1", "Plays sound and vibrates when resin nearby")
