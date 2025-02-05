@@ -156,10 +156,10 @@ _G.ResinWatch = nil
 function GetResinWatch()
     if not IsEntity(ResinWatch, true) then
         for i = 1, 2 do
-            for _, child in ipairs(Player.Hands[i]) do
+            for _, child in ipairs(Player.Hands[i]:GetChildrenMemSafe()) do
                 if isinstance(child, "ResinWatch") then
-                    ResinWatch = child
-                    return child
+                    ResinWatch = child--[[@as ResinWatch]]
+                    return ResinWatch
                 end
             end
         end
@@ -167,12 +167,6 @@ function GetResinWatch()
 
     return ResinWatch
 end
-
-ListenToPlayerEvent("primary_hand_changed", function() 
-    if GetResinWatch() then
-        ResinWatch:AttachToHand()
-    end
-end)
 
 
 ---@param params PlayerEventVRPlayerReady
