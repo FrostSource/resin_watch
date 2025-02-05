@@ -307,7 +307,7 @@ function base:SetBlankVisuals()
     self:SetBodygroup(BODY_WATCH_MODE, mode)
     self:SetSkin(SKIN_BODY_LED_OFF)
     self:EntFire("SetRenderAttribute", "$CounterIcon=" .. (isResin and RESIN_COUNTER_INDEX_BLANK or AMMO_COUNTER_INDEX_BLANK))
-    base.__lastResinTracked = nil
+    self.__lastResinTracked = nil
 end
 
 ---Get the list of classnames related to the current tracking mode.
