@@ -56,6 +56,19 @@ require "resin_watch.classes.watch"
 
 local watch_name = "resin_watch_attached_to_hand"
 
+local function spawnResinWatch()
+    SpawnEntityFromTableAsynchronous("prop_dynamic", {
+        targetname = watch_name,
+        model = "models/resin_watch/resin_watch.vmdl",
+        vscripts = "resin_watch/classes/watch",
+        disableshadows = "1",
+    }, function (spawnedEnt)
+        ---@cast spawnedEnt ResinWatch
+        spawnedEnt:AttachToHand()
+        ResinWatch = spawnedEnt
+    end, nil)
+end
+
 EasyConvars:RegisterConvar("resin_watch_radius", "700", "Distance to track resin")
 EasyConvars:SetPersistent("resin_watch_radius", true)
 EasyConvars:RegisterConvar("resin_watch_notify", "1", "Plays sound and vibrates when resin nearby")
@@ -171,22 +184,16 @@ end
 
 ---@param params PlayerEventVRPlayerReady
 ListenToPlayerEvent("vr_player_ready", function (params)
-    if Entities:FindByName(nil, watch_name) then
-        return
+    if not GetResinWatch() then
+        devprint("Resin Watch: Not found, spawning new watch...")
+        spawnResinWatch()
     end
 
-    devprint("Spawning resin watch...")
-
-    SpawnEntityFromTableAsynchronous("prop_dynamic", {
-        targetname = "resin_watch_attached_to_hand",
-        model = "models/resin_watch/resin_watch.vmdl",
-        vscripts = "resin_watch/classes/watch",
-        disableshadows = "1",
-    }, function (spawnedEnt)
-        ---@cast spawnedEnt ResinWatch
-        spawnedEnt:AttachToHand()
-        ResinWatch = spawnedEnt
-    end, nil)
+    -- If vr isn't enabled but hmd exists, assume +vr_enable_fake_vr 1
+    if not IsVREnabled() then
+        Convars:SetInt("vr_fakehands_rotate_y_left", 90)
+        Convars:SetInt("vr_fakehands_hand_vertical_left", 5)
+    end
 
 end)
 
