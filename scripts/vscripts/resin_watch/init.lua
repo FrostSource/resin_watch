@@ -8,7 +8,7 @@ local version = "v3.0.0"
 
 local alyxlibAddonIndex = RegisterAlyxLibAddon("Resin Watch (Item Tracker)", version, "3145397582", "resin_watch", "v1.3.0")
 
-ReigsterAlyxLibDiagnostic(alyxlibAddonIndex, function ()
+RegisterAlyxLibDiagnostic(alyxlibAddonIndex, function ()
     if not Player.HMDAvatar then
         return false, "Resin watch requires VR or +vr_enable_fake_vr to be enabled"
     end
@@ -198,6 +198,19 @@ function GetResinWatch()
     return ResinWatch
 end
 
+local count = 5
+
+local tbl = {}
+
+for i = 1, count do
+  if i == count - 1 then
+    tbl[i] = nil
+  else
+    tbl[i] = true
+  end
+end
+
+print("Table length should be " .. count .. " and it is actually " .. #tbl)
 
 ---@param params PlayerEventVRPlayerReady
 ListenToPlayerEvent("vr_player_ready", function (params)
