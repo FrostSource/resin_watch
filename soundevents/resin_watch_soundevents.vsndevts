@@ -8,6 +8,8 @@
 		spread_max = 150.000000
 		volume_falloff_min = 5.000000
 		volume_falloff_max = 55.000000
+        use_hrtf = 1.000000
+        mixgroup = "PlayerInventory"
 		vsnd_files = 
 		[
 			"sounds/player/inventory/player_watch_health_alarm_ack_01.vsnd",
