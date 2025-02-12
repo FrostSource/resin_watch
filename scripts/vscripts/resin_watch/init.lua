@@ -43,7 +43,7 @@ RegisterAlyxLibDiagnostic(alyxlibAddonIndex, function ()
     if not attachedHand then
         return false, "The watch is not attached to a hand"
     end
-    Msg("Resin watch is attached to " .. Input:GetHandName(attachedHand) .. "hand\n")
+    Msg("Resin watch is attached to " .. Input:GetHandName(attachedHand) .. "\n")
 
     local thinkTime = watch:GetLocalLastThinkTime()
     Msg("Resin watch last think time: " .. Time() - thinkTime .. " seconds ago (" .. thinkTime .. ")\n")
