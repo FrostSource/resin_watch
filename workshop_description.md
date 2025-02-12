@@ -28,6 +28,8 @@ Your Resin Watch will switch to an orange color and start tracking nearby items.
 
 [h2]Console Commands[/h2]
 
+Console commands allow you to customize and tweak the addon while playing. They are not required to use the addon, and for most users the default values will provide a good experience. 
+
 If you don't know how to use the console, follow this guide: https://steamcommunity.com/sharedfiles/filedetails/?id=2040205272
 
 [hr][/hr]
@@ -99,6 +101,6 @@ The watch cannot track resin or items that have not been spawned yet. Because of
 
 [h2]Getting Help[/h2]
 
-Please feel free to reach out either by commenting below or messaging me on the Discord server!
+Please feel free to reach out either by commenting below or on the Discord server!
 
 [url=https://discord.gg/42SC3Wyjv4][img]https://steamuserimages-a.akamaihd.net/ugc/2397692528302959470/036A75FE4B2E8CD2224F8B62E7CEBEE649493C40/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img][/url]
