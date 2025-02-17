@@ -87,6 +87,12 @@ To figure out the value of the button you want to use, visit The [url=https://de
 Console commands can be set in the [url=https://help.steampowered.com/faqs/view/7D01-D2DD-D75E-2955]launch options[/url] for Half-Life: Alyx, just put a hyphen before each name and the value after, e.g. [b]-resin_watch_primary_hand 1[/b]
 They can also be added to your [b]Half-Life Alyx\game\hlvr\cfg\skill.cfg[/b] file, one per line without the hyphen, e.g. [b]resin_watch_primary_hand 1[/b]
 
+[h2]Credits[/h2]
+
+Resin watch model created and integrated by TeamSpen210
+https://steamcommunity.com/id/TeamSpen210/
+https://github.com/TeamSpen210
+
 [h2]Source Code[/h2]
 
 GitHub: https://github.com/FrostSource/resin_watch
