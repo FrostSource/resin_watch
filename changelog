@@ -16,6 +16,8 @@ Fixed the entity tracking not updating when changing resin_watch_allow_ammo_trac
 
 Moved the watch closer to the wrist like it used to be.
 
+Added sounds to the player inventory mix group so they should be more immersive.
+
 Update 3:
 
 This addon has been completely overhauled to use the new AlyxLib scripting system. It requires the AlyxLib addon to be downloaded and enabled.
