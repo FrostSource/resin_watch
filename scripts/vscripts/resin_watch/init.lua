@@ -198,20 +198,6 @@ function GetResinWatch()
     return ResinWatch
 end
 
-local count = 5
-
-local tbl = {}
-
-for i = 1, count do
-  if i == count - 1 then
-    tbl[i] = nil
-  else
-    tbl[i] = true
-  end
-end
-
-print("Table length should be " .. count .. " and it is actually " .. #tbl)
-
 ---@param params PlayerEventVRPlayerReady
 ListenToPlayerEvent("vr_player_ready", function (params)
     if not GetResinWatch() then
