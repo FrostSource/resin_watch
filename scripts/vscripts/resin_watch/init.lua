@@ -146,7 +146,7 @@ function()
         [VR_CONTROLLER_TYPE_RIFT_S] = DIGITAL_INPUT_USE_GRIP,
     }, DIGITAL_INPUT_ARM_XEN_GRENADE)[Player:GetVRControllerType()]
 end,
-"", nil,
+"The digital action that must be double pressed to toggle watch modes", nil,
 -- Main callback
 function (newVal, oldVal)
     local button = tonumber(newVal)
@@ -161,6 +161,12 @@ function (newVal, oldVal)
     end
 
     ResinWatch:UpdateControllerInputs()
+end, function (reg)
+    Msg(reg.name .. " = " .. tostring(reg.value) .. "\n")
+    Msg("Toggle digital action is '" .. Input:GetButtonDescription(tonumber(reg.value)) .. "'\n")
+    if reg.desc ~= nil and reg.desc ~= "" then
+        Msg(reg.desc .. "\n")
+    end
 end)
 EasyConvars:SetPersistent("resin_watch_toggle_button", true)
 
