@@ -46,7 +46,7 @@ RegisterAlyxLibDiagnostic(alyxlibAddonIndex, function ()
     Msg("Resin watch is attached to " .. Input:GetHandName(attachedHand) .. "\n")
 
     local thinkTime = watch:GetLocalLastThinkTime()
-    Msg("Resin watch last think time: " .. Time() - thinkTime .. " seconds ago (" .. thinkTime .. ")\n")
+    Msg("Resin watch last think time: " .. thinkTime .. " seconds ago.\n")
 
     return true, "No issues were detected, try using `resin_watch_reset_watch` to fix any issues"
 end)
