@@ -2,7 +2,7 @@
 
 Keep track of resin, ammo and items in any map using this watch which comes equipped with a nearby indicator and total counter so you'll never miss an upgrade or grenade!
 
-[i]This addon require [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3329679071]AlyxLib[/url] to work.[/i]
+[i]This addon requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3329679071]AlyxLib[/url] to work.[/i]
 
 [img]https://steamuserimages-a.akamaihd.net/ugc/2312102971535718159/B40340B355316F302AC1910CF8464CA2FA204EC1/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false[/img]
 
