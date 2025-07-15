@@ -246,4 +246,6 @@ ListenToPlayerEvent("novr_player", function (params)
     end, "", 0)
 end)
 
+require("resin_watch.debug_menu")
+
 print("Resin watch "..version.." initialized...")
