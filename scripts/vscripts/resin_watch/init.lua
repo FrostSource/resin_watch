@@ -187,6 +187,9 @@ _G.ResinWatch = nil
 ---@return ResinWatch?
 function GetResinWatch()
     if not IsEntity(ResinWatch, true) then
+        if Player == nil or Player.HMDAvatar == nil then
+            return nil
+        end
         for i = 1, 2 do
             for _, child in ipairs(Player.Hands[i]:GetChildrenMemSafe()) do
                 if isinstance(child, "ResinWatch") then
