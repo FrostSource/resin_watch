@@ -161,12 +161,8 @@ function (newVal, oldVal)
     end
 
     ResinWatch:UpdateControllerInputs()
-end, function (reg)
-    Msg(reg.name .. " = " .. tostring(reg.value) .. "\n")
-    Msg("Toggle digital action is '" .. Input:GetButtonDescription(tonumber(reg.value)) .. "'\n")
-    if reg.desc ~= nil and reg.desc ~= "" then
-        Msg(reg.desc .. "\n")
-    end
+
+    Msg("Toggle digital action is now'" .. Input:GetButtonDescription(tonumber(newVal)) .. "\n")
 end)
 EasyConvars:SetPersistent("resin_watch_toggle_button", true)
 
