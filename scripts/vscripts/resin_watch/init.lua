@@ -6,7 +6,7 @@ require("alyxlib.init")
 
 local version = "v3.1.0"
 
-local alyxlibAddonIndex = RegisterAlyxLibAddon("Resin Watch (Item Tracker)", version, "3145397582", "resin_watch", "v1.3.0")
+local alyxlibAddonIndex = RegisterAlyxLibAddon("Resin Watch (Item Tracker)", version, "3145397582", "resin_watch", "v2.0.0")
 
 RegisterAlyxLibDiagnostic(alyxlibAddonIndex, function ()
     if not Player.HMDAvatar then
