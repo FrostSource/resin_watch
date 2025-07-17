@@ -4,7 +4,7 @@ if IsClient() then return end
 -- Load alyxlib before using it, in case this mod loads before the alyxlib mod.
 require("alyxlib.init")
 
-local version = "v3.0.0"
+local version = "v3.1.0"
 
 local alyxlibAddonIndex = RegisterAlyxLibAddon("Resin Watch (Item Tracker)", version, "3145397582", "resin_watch", "v1.3.0")
 
