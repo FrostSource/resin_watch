@@ -163,6 +163,11 @@ function base:OnReady(readyType)
         self:UpdateControllerInputs()
     end
 
+    -- Old saves might be using the wrong model
+    if self:GetModelName() ~= "models/resin_watch/resin_watch.vmdl" then
+        self:SetModel("models/resin_watch/resin_watch.vmdl")
+    end
+
     self:ForceUpdateTracking()
 end
 

@@ -45,6 +45,13 @@ RegisterAlyxLibDiagnostic(alyxlibAddonIndex, function ()
     end
     Msg("Resin watch is attached to " .. Input:GetHandName(attachedHand) .. "\n")
 
+    if watch:GetModelName() ~= "models/resin_watch/resin_watch.vmdl" then
+        Msg("Resin watch is not using the correct model, resetting...\n")
+        Msg(watch:GetModelName() .. " -> models/resin_watch/resin_watch.vmdl\n")
+        watch:SetModel("models/resin_watch/resin_watch.vmdl")
+        return false, "Resin watch model was changed"
+    end
+
     local thinkTime = watch:GetLocalLastThinkTime()
     Msg("Resin watch last think time: " .. thinkTime .. " seconds ago.\n")
 
