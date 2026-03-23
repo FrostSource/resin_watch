@@ -1,3 +1,9 @@
+Update 6 (v3.1.1)
+
+Fix for saved games using older version of the mod causing an error model to appear
+
+Updated AlyxLib syntax
+
 Update 5 (v3.1.0):
 
 Updated to AlyxLib v2.0.0
