@@ -4,6 +4,7 @@
   "PanoramaInstalled": false,
   "GitInstalled": true,
   "ModFolderName": "resin_watch",
-  "Version": "1.4.0",
-  "EditorType": 1
+  "Version": "3.0.0",
+  "EditorType": "VisualStudioCode",
+  "FileRemovalGlobs": []
 }
